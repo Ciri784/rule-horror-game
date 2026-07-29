@@ -46,7 +46,7 @@ const RULES = {
   rg2: { subject: "房客", book: "房客守則",
          text: "睡覺時把房卡放在枕頭旁邊，出門也帶著。" },
   rg3: { subject: "房客", book: "房客守則",
-         text: "夜裡有人敲門，先看自己的門牌再開。門牌才是房間現在認的。" },
+         text: "夜裡有人敲門，先問他找哪間。他報的不是你的房號，別開。" },
   rg4: { subject: "房客", book: "房客守則",
          text: "十二點以後不要開電視。電視看完記得關，別再按開。" },
   rg5: { subject: "房客", book: "房客守則",
@@ -172,6 +172,12 @@ function actions(state, ctx) {
         } else {
           c.narrate("電視是雪花，只有第 4 台有聲音，半夜新聞重播。");
         }
+        // 違反 rg4：十二點以後不要開電視
+        if (s.crossedMidnight && !s._brokeRg4) {
+          s.drift += 1;
+          s._brokeRg4 = true;
+          c.narrate("你想起守則第四條。但你已經按了。");
+        }
         s.time += 3;
       } });
     if (state.tvOn7 && !state.tvOff) {
@@ -234,8 +240,24 @@ function actions(state, ctx) {
           s.time += 2;
         } });
     }
-    if (state.crossedMidnight) {
-      out.push({ id: "answer-door", label: "有人敲門——開門",
+    if (state.crossedMidnight && !state._askedKnocker) {
+      out.push({ id: "ask-door", label: "問他找哪間",
+        onChoose: (s, c) => {
+          s._askedKnocker = true;
+          if (s.doorNumber === HIDDEN_NUMBER) {
+            c.narrate("你隔著門問：找哪間？");
+            c.narrate("門外停了一下。一個聲音說：704。");
+            c.narrate("你的房卡是 602。");
+          } else {
+            c.narrate("你隔著門問：找哪間？");
+            c.narrate("門外停了一下。一個聲音說：602。");
+            c.narrate("你等他再說一句，但走廊安靜了。");
+          }
+          s.time += 1;
+        } });
+    }
+    if (state._askedKnocker) {
+      out.push({ id: "open-door", label: "開門",
         onChoose: (s, c) => {
           if (s.doorNumber === HIDDEN_NUMBER) {
             s.drift += 2;
@@ -278,11 +300,24 @@ function actions(state, ctx) {
         } else if (n === 3) {
           c.narrate("你第三次躺下來。床單的溫度不太對，像有人剛躺過。");
           c.narrate("你夢到一扇門，門牌上的數字在動。你看不清楚。");
-          c.narrate(`醒來時，時鐘指向 ${formatTime(s.time)}。`);
+          if (s.drift >= 2) {
+            c.narrate("醒來時，你不在房間裡。");
+            c.narrate("你站在一樓大廳的沙發上，腳底是地毯，櫃台的人看著你。");
+            c.narrate("他說：您走錯了。我帶您回去。");
+            moveTo(c.scene, s, "lobby", LOCATIONS["lobby"].label);
+          } else {
+            c.narrate(`醒來時，時鐘指向 ${formatTime(s.time)}。`);
+          }
         } else {
           c.narrate("你躺下來。不太確定自己為什麼還在這間房間。");
           c.narrate("這次有夢。夢裡你走到門口，門鎖咔的一聲開了。");
-          c.narrate(`醒來時，時鐘指向 ${formatTime(s.time)}。門牌上寫的是 ${s.doorNumber}。`);
+          if (s.drift >= 3) {
+            c.narrate("醒來時，你不認得這層樓。");
+            c.narrate("走廊很短，只有兩扇門。一盞燈。門牌寫 704。");
+            moveTo(c.scene, s, "floor-7", LOCATIONS["floor-7"].label);
+          } else {
+            c.narrate(`醒來時，時鐘指向 ${formatTime(s.time)}。門牌上寫的是 ${s.doorNumber}。`);
+          }
         }
       } });
     // 鑰匙有兩個用途：開 704 的門（結局），或拿來試電梯面板（去七樓）。
@@ -330,6 +365,12 @@ function actions(state, ctx) {
         c.narrate("他抬頭看你，笑了一下：你房間還好吧？");
         c.narrate("你問他今晚客滿嗎。他翻了翻登記簿，說：都在。");
         c.narrate("你問「都在」是什麼意思。他的笑容停了半秒：就是都在啊。");
+        if (has(s, "key-704")) {
+          c.narrate("他的目光停在你口袋的位置。");
+          c.narrate("你沒拿出鑰匙。但他好像知道你帶了什麼。");
+          c.narrate("他說：那個不是您的。");
+          c.narrate("你問什麼不是你的。他沒回答，低頭繼續寫。");
+        }
         if (s.drift >= 1) {
           c.narrate("你又問：4 樓怎麼沒有？");
           c.narrate("他看著你，這次沒笑：4 樓沒有 4 樓。您早點休息。");
@@ -472,6 +513,7 @@ function actions(state, ctx) {
           c.narrate("你把鑰匙放在床上。");
           c.narrate("鑰匙自己滾進了抽屜。");
           c.narrate("你沒去撿。門在你身後關上。");
+          s._entered704Floor = true;
           s.drift += 2;
           s.time += 3;
         } });
@@ -494,6 +536,11 @@ const ENDINGS = [
   { id: "key-holder", label: "鑰匙不用還",
     text: "門關上之前，你看了一眼門牌。\n602。它一直是 602。\n但你手裡的鑰匙寫著 704，而且它剛剛開了一扇門。\n你站在走廊裡，口袋是空的。身後的門鎖上了。\n電梯面板上，有一層燈亮著。",
     when: (s) => s._keyUsedOnDoor === true },
+
+  // 七樓進了 704，門關上，沒出來。
+  { id: "stayed", label: "住了下來",
+    text: "門在你身後關上。\n房間跟你的不一樣——床單是新的，枕頭下沒有東西。\n你拉開床頭櫃，抽屜裡有一把銅鑰匙，齒磨得剛好。\n門牌寫 704。你把房卡放回口袋。\n房卡上的字，不見了。",
+    when: (s) => s._entered704Floor === true },
 
   // 門牌被房間翻成 704、還在房裡、撐過午夜。
   { id: "resident", label: "換了一張房卡",
@@ -523,7 +570,7 @@ export const hotel = {
   initialIdentity: "guest",
   initialLocation: "my-room",
   initialTime: 23 * 60,
-  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false },
+  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false },
   rules: RULES,
   rulebooks: RULEBOOKS,
   judges: JUDGES,
