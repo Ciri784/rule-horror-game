@@ -157,11 +157,40 @@ function actions(state, ctx) {
           s.time += 2;
         } });
     }
+    out.push({ id: "look-room", label: "看一下房間",
+      onChoose: (s, c) => {
+        if (s.drift === 0) {
+          c.narrate("房間很普通。單人床、床頭櫃、電視、窗戶。進來時什麼樣，現在就什麼樣。");
+        } else {
+          c.narrate("你環顧房間。");
+          c.narrate("床頭櫃的抽屜微開了一條縫。你記得進來時是關的。");
+          c.narrate("電視的電源燈亮著紅點。你沒開過電視。");
+          c.narrate("枕頭的位置比你離開時低了一點。");
+          s._roomChanged = true;
+        }
+        s.time += 2;
+      } });
+    if (state._roomChanged && !state._closedEyes) {
+      out.push({ id: "close-eyes", label: "閉眼數到十",
+        onChoose: (s, c) => {
+          s._closedEyes = true;
+          c.narrate("你閉上眼，數到十。");
+          c.narrate("一、二、三——走廊有腳步聲。四、五、六——腳步停在你門口。七、八、九——門把手轉了一下。十。");
+          c.narrate("你睜開眼。房間跟進來時一模一樣。");
+          c.narrate("床頭櫃關著。電視沒亮。枕頭的高度剛好。");
+          c.narrate("但門鎖的鏈條掛著。你進來時沒掛鏈條。");
+          s.time += 5;
+        } });
+    }
     out.push({ id: "watch-tv", label: "看電視",
       onChoose: (s, c) => {
         const sevens = s.crossedMidnight || s.drift >= 1;
         if (sevens) {
-          if (s.tvOff) {
+          if (!s._tvSeen) {
+            s._tvSeen = true;
+            c.narrate("電視跳了幾下。畫面是一條你沒走過的走廊，燈一盞一盞亮著，鏡頭正對著盡頭一扇門。");
+            c.narrate("你盯著看了三秒。螢幕上那扇門沒有倒影。");
+          } else if (s.tvOff) {
             s.drift += 1; s.tvOff = false;
             c.narrate("電視自己跳回去了。畫面是一條你沒走過的走廊，燈一盞一盞亮著，鏡頭正對著盡頭一扇門。");
             c.narrate("你盯著看了三秒。螢幕上那扇門沒有倒影。");
@@ -200,6 +229,14 @@ function actions(state, ctx) {
           c.narrate("你數樓層，數到一半，窗戶上的灰塵開始動。");
         }
         s.time += 3;
+      } });
+    out.push({ id: "look-bed", label: "看床",
+      onChoose: (s, c) => {
+        c.narrate("單人床，白床單，枕頭放得很整齊。");
+        if (!has(s, "staff-card")) {
+          c.narrate("枕頭中間有點凹，像有人壓過。");
+        }
+        s.time += 1;
       } });
     out.push({ id: "look-pillow", label: "翻枕頭",
       onChoose: (s, c) => {
@@ -300,7 +337,7 @@ function actions(state, ctx) {
         } else if (n === 3) {
           c.narrate("你第三次躺下來。床單的溫度不太對，像有人剛躺過。");
           c.narrate("你夢到一扇門，門牌上的數字在動。你看不清楚。");
-          if (s.drift >= 2) {
+          if (s.drift >= 1) {
             c.narrate("醒來時，你不在房間裡。");
             c.narrate("你站在一樓大廳的沙發上，腳底是地毯，櫃台的人看著你。");
             c.narrate("他說：您走錯了。我帶您回去。");
@@ -311,7 +348,7 @@ function actions(state, ctx) {
         } else {
           c.narrate("你躺下來。不太確定自己為什麼還在這間房間。");
           c.narrate("這次有夢。夢裡你走到門口，門鎖咔的一聲開了。");
-          if (s.drift >= 3) {
+          if (s.drift >= 2) {
             c.narrate("醒來時，你不認得這層樓。");
             c.narrate("走廊很短，只有兩扇門。一盞燈。門牌寫 704。");
             moveTo(c.scene, s, "floor-7", LOCATIONS["floor-7"].label);
@@ -570,7 +607,7 @@ export const hotel = {
   initialIdentity: "guest",
   initialLocation: "my-room",
   initialTime: 23 * 60,
-  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false },
+  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _tvSeen: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false, _roomChanged: false, _closedEyes: false },
   rules: RULES,
   rulebooks: RULEBOOKS,
   judges: JUDGES,
