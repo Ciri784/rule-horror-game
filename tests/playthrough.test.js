@@ -96,6 +96,27 @@ describe("深夜飯店 playthrough", () => {
     expect(state.ended).toBe("claimed-by-clerk");
   });
 
+  it("drift 會從環境洩底: 綠燈、鏡子、櫃台叫錯房號", () => {
+    const { state, ctx } = newRun();
+    const said = () => JSON.stringify(state.narrative);
+    state.drift = 1;
+    act(state, ctx, "look-door");
+    expect(said()).toContain("閃了一下");
+    act(state, ctx, "look-room");
+    expect(said()).toContain("慢了半拍");
+    act(state, ctx, "go-lobby");
+    act(state, ctx, "talk-clerk");
+    expect(said()).toContain("對吧");
+    state.drift = 2;
+    act(state, ctx, "talk-clerk");
+    expect(said()).toContain("704 的客人");
+    act(state, ctx, "go-room");
+    act(state, ctx, "look-door");
+    expect(said()).toContain("看成別的數字");
+    act(state, ctx, "look-card");
+    expect(said()).toContain("淡");
+  });
+
   it("staying in your room past midnight, unbothered, is safe (no premature end)", () => {
     const { state, ctx } = newRun();
     state.crossedMidnight = true;

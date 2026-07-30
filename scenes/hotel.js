@@ -168,6 +168,8 @@ function actions(state, ctx) {
           c.narrate(`房卡邊角磨白了，印著 ${CARD_NUMBER}。你走進這間房時櫃台遞給你的，還溫的。`);
           if (s.doorNumber !== CARD_NUMBER) {
             c.narrate("你又翻過來看了房卡一次。房卡沒變過。");
+          } else if (s.drift >= 2) {
+            c.narrate("你把房卡湊近看。上頭的號碼比你記得淡，像被橡皮擦抹過一層。");
           }
           s.time += 1;
         } });
@@ -177,6 +179,11 @@ function actions(state, ctx) {
         c.narrate(`門牌上寫著 ${s.doorNumber}。白底黑字，跟飯店其他房間一樣。`);
         if (s.doorNumber !== CARD_NUMBER) {
           c.narrate("你站在那裡又看了一下。房卡和門牌是兩個號碼。");
+        } else if (s.drift === 1) {
+          c.narrate("門牌旁的綠色小燈閃了一下。你盯著它看，它又一直亮著，像什麼都沒發生。");
+        } else if (s.drift >= 2) {
+          c.narrate("你有一瞬間把門牌看成別的數字。眨了眨眼，602 又好好地待在那裡。");
+          c.narrate("綠色小燈暗了半秒，才慢慢亮起來。");
         }
         s.time += 2;
       } });
@@ -206,10 +213,15 @@ function actions(state, ctx) {
       onChoose: (s, c) => {
         if (s.drift === 0) {
           c.narrate("房間很普通。單人床、床頭櫃、電視、窗戶。進來時什麼樣，現在就什麼樣。");
+        } else if (s.drift === 1) {
+          c.narrate("你環顧房間。大致上跟進來時一樣。");
+          c.narrate("只是鏡子裡的你，好像比你慢了半拍才轉過頭。");
+          s._roomChanged = true;
         } else {
           c.narrate("你環顧房間。");
           c.narrate("床頭櫃的抽屜微開了一條縫。你記得進來時是關的。");
           c.narrate("電視的電源燈亮著紅點。你沒開過電視。");
+          c.narrate("鏡子裡那間房的燈，跟你身後這間的顏色不太一樣。");
           c.narrate("枕頭的位置比你離開時低了一點。");
           s._roomChanged = true;
         }
@@ -458,6 +470,14 @@ function actions(state, ctx) {
         c.narrate("他抬頭看你，笑了一下：你房間還好吧？");
         c.narrate("你問他今晚客滿嗎。他翻了翻登記簿，說：都在。");
         c.narrate("你問「都在」是什麼意思。他的笑容停了半秒：就是都在啊。");
+        if (s.drift >= 2) {
+          c.narrate("他翻了翻登記簿，抬頭：704 的客人，還有什麼事嗎？");
+          c.narrate("你說你住 602。他握著筆，停在紙上很久。");
+          c.narrate("他說：對。602。我記錯了。");
+        } else if (s.drift === 1) {
+          c.narrate("他低頭翻登記簿：您房間是——602，對吧。");
+          c.narrate("說「602」的時候，他看的是你身後的電梯。");
+        }
         if (has(s, "key-704")) {
           c.narrate("他的目光停在你口袋的位置。");
           c.narrate("你沒拿出鑰匙。但他好像知道你帶了什麼。");
