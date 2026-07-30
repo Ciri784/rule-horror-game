@@ -22,6 +22,21 @@ import {
 
 const scenes = {};
 
+// Live clock tick: one setInterval per scene view (5 real seconds = 1 in-game
+// minute, same rate as the idle catch-up in renderScene). Module-level so
+// route changes and restarts can stop it.
+let tickHandle = null;
+function stopTick() {
+  if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+}
+
+// Scenes keep private fields on state; `drift` is the horror-leak level the
+// monitor chrome reacts to (0 = none, 1 = flicker, 2+ = glitch).
+function driftClass(state) {
+  const d = typeof state.drift === "number" ? state.drift : 0;
+  return d >= 2 ? " drift-2" : d === 1 ? " drift-1" : "";
+}
+
 // $app is only meaningful in a browser. Resolve lazily so this module is
 // importable under Node (e.g. by tests) without a real document.
 let $app = null;
@@ -281,7 +296,16 @@ export function renderScene(sceneId) {
     // still detached, so getElementById returned null and the stream
     // stayed empty.
     const grid = el("div", { class: "scene-grid" }, [rulesCol, narrCol, actCol]);
-    appRoot().appendChild(grid);
+    // CRT monitor chrome: status bar carries the scene title and the live
+    // clock; the frame itself is what drift leaks into (see drift-* CSS).
+    const monitor = el("div", { class: "monitor" + driftClass(state) }, [
+      el("div", { class: "monitor-status" }, [
+        el("span", {}, scene.title),
+        el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
+      ]),
+      grid,
+    ]);
+    appRoot().appendChild(monitor);
     renderNarrativeStream(streamEl, state);
 
 
@@ -291,6 +315,32 @@ export function renderScene(sceneId) {
     // bottom of the newest entry here.
     const stream = document.getElementById("narrative-stream");
     if (stream) stream.scrollTop = stream.scrollHeight;
+  }
+
+  // --- Live clock tick ---
+  // Advances the in-game clock in place; a full rerender() only happens when
+  // the tick actually changed something visible (new narration, an ending),
+  // so idle ticks don't stomp scroll position or the just-typed animation.
+  stopTick();
+  if (!state.ended) {
+    const DAY = 24 * 60;
+    tickHandle = setInterval(() => {
+      if (state.ended) { stopTick(); return; }
+      const narrBefore = Array.isArray(state.narrative) ? state.narrative.length : 0;
+      const before = state.time;
+      state.time = (state.time + 1) % DAY;
+      if (state.time < before) state.crossedMidnight = true;
+      state._lastTickAt = Date.now();
+      evaluateTriggers(scene, state);
+      checkEndings(scene, state, ctx);
+      saveState(sceneId, state);
+      const clock = document.getElementById("live-clock");
+      if (clock) clock.textContent = formatTime(state.time);
+      const mon = document.querySelector(".monitor");
+      if (mon) mon.className = "monitor" + driftClass(state);
+      const narrAfter = Array.isArray(state.narrative) ? state.narrative.length : 0;
+      if (state.ended || narrAfter !== narrBefore) rerender();
+    }, 5000);
   }
 
   function restart() { clearState(sceneId); renderScene(sceneId); }
@@ -328,6 +378,7 @@ function renderNarrativeStream(stream, state) {
   }
 }
 export function renderIndex() {
+  stopTick();
   appRoot().innerHTML = "";
   const card = el("div", { class: "scene-card" });
   card.appendChild(el("h1", {}, "規則怪談集"));

@@ -110,6 +110,35 @@ html, body {
   box-shadow: 0 0 6px var(--phosphor);
 }
 
+.monitor-status .live-clock {
+  color: var(--ink-dim);
+  letter-spacing: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============== drift 滲入外框 ==============
+   drift 1：幾乎什麼都沒有——每 11 秒一次亮度輕跌，
+   玩家會以為是自己眼睛疲勞。 */
+@keyframes drift-flicker {
+  0%, 91.9%, 100% { filter: none; }
+  92%   { filter: brightness(0.82); }
+  93.5% { filter: brightness(1.12) saturate(1.2); }
+  95%   { filter: none; }
+}
+.monitor.drift-1 { animation: drift-flicker 11s steps(1, end) infinite; }
+
+/* drift 2：外框本身開始不可信——幾何抽搐、螢光色偏、
+   REC 燈失序。 */
+@keyframes drift-glitch {
+  0%, 86.9%, 100% { transform: translate(0); filter: none; }
+  87%   { transform: translateX(-2px) skewX(-0.6deg); filter: hue-rotate(18deg) brightness(0.85); }
+  88.5% { transform: translateX(2px); filter: brightness(1.18) saturate(1.5); }
+  90%   { transform: translateX(-1px); filter: none; }
+  91%   { transform: translate(0); }
+}
+.monitor.drift-2 { animation: drift-glitch 7s steps(1, end) infinite; }
+.monitor.drift-2::before { animation: rec-blink 0.9s steps(2, end) infinite; }
+
 /* ============== 三欄 grid ============== */
 .scene-grid {
   display: grid;
