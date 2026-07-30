@@ -296,12 +296,19 @@ export function renderScene(sceneId) {
     // still detached, so getElementById returned null and the stream
     // stayed empty.
     const grid = el("div", { class: "scene-grid" }, [rulesCol, narrCol, actCol]);
-    // CRT monitor chrome: status bar carries the scene title and the live
-    // clock; the frame itself is what drift leaks into (see drift-* CSS).
+    // CRT monitor chrome: the status bar owns REC / channel / clock directly
+    // (border-straddling ::before/::after badges were dropped — they crowded
+    // the bar). The frame itself is what drift leaks into (see drift-* CSS).
     const monitor = el("div", { class: "monitor" + driftClass(state) }, [
       el("div", { class: "monitor-status" }, [
-        el("span", {}, scene.title),
-        el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
+        el("span", { class: "status-left" }, [
+          el("span", { class: "dot" }),
+          "REC · " + scene.title,
+        ]),
+        el("span", { class: "status-right" }, [
+          el("span", { class: "status-ch" }, "CH-04"),
+          el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
+        ]),
       ]),
       grid,
     ]);

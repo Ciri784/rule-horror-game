@@ -60,33 +60,8 @@ html, body {
     inset 0 0 80px rgba(0,0,0,0.6);
   position: relative;
 }
-.monitor::before {
-  content: "● REC";
-  position: absolute;
-  top: -1px;
-  left: 12px;
-  transform: translateY(-50%);
-  background: var(--bg-2);
-  padding: 0 8px;
-  color: var(--accent);
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  font-family: inherit;
-  animation: rec-blink 1.6s steps(2, end) infinite;
-}
-.monitor::after {
-  content: "頻道 CH-04  /  場所監視系統";
-  position: absolute;
-  top: -1px;
-  right: 12px;
-  transform: translateY(-50%);
-  background: var(--bg-2);
-  padding: 0 8px;
-  color: var(--ink-dim);
-  font-size: 10px;
-  letter-spacing: 0.25em;
-  font-family: inherit;
-}
+.monitor::before,
+.monitor::after { content: none; }
 @keyframes rec-blink {
   50% { opacity: 0.2; }
 }
@@ -101,6 +76,13 @@ html, body {
   color: var(--ink-faint);
   background: var(--bg-3);
 }
+.monitor-status .status-left,
+.monitor-status .status-right {
+  display: flex;
+  align-items: center;
+}
+.monitor-status .status-right { gap: 14px; }
+.monitor-status .status-ch { color: var(--ink-faint); }
 .monitor-status .dot {
   display: inline-block;
   width: 8px; height: 8px;
@@ -108,6 +90,7 @@ html, body {
   border-radius: 50%;
   margin-right: 6px;
   box-shadow: 0 0 6px var(--phosphor);
+  animation: rec-blink 1.6s steps(2, end) infinite;
 }
 
 .monitor-status .live-clock {
@@ -137,7 +120,7 @@ html, body {
   91%   { transform: translate(0); }
 }
 .monitor.drift-2 { animation: drift-glitch 7s steps(1, end) infinite; }
-.monitor.drift-2::before { animation: rec-blink 0.9s steps(2, end) infinite; }
+.monitor.drift-2 .dot { animation: rec-blink 0.9s steps(2, end) infinite; }
 
 /* ============== 三欄 grid ============== */
 .scene-grid {
