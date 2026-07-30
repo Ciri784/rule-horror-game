@@ -48,7 +48,9 @@ html, body {
   padding: 14px;
 }
 
-/* ============== 監視器外殼 ============== */
+/* ============== 頁面外框 ==============
+   讀者在場所「裡面」，不是在監看場所——
+   所以沒有 REC、頻道、訊號燈這類監視台語言。 */
 .monitor {
   max-width: 1320px;
   margin: 0 auto;
@@ -60,40 +62,19 @@ html, body {
     inset 0 0 80px rgba(0,0,0,0.6);
   position: relative;
 }
-.monitor::before,
-.monitor::after { content: none; }
-@keyframes rec-blink {
-  50% { opacity: 0.2; }
-}
 
-.monitor-status {
+/* 場所頁首——文件式的安靜一行：場所名 + 房間時鐘。 */
+.scene-head {
   display: flex;
   justify-content: space-between;
-  padding: 8px 18px;
+  padding: 10px 18px;
   border-bottom: 1px solid var(--border-soft);
   font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--ink-faint);
+  letter-spacing: 0.35em;
   background: var(--bg-3);
 }
-.monitor-status .status-left,
-.monitor-status .status-right {
-  display: flex;
-  align-items: center;
-}
-.monitor-status .status-right { gap: 14px; }
-.monitor-status .status-ch { color: var(--ink-faint); }
-.monitor-status .dot {
-  display: inline-block;
-  width: 8px; height: 8px;
-  background: var(--phosphor);
-  border-radius: 50%;
-  margin-right: 6px;
-  box-shadow: 0 0 6px var(--phosphor);
-  animation: rec-blink 1.6s steps(2, end) infinite;
-}
-
-.monitor-status .live-clock {
+.scene-head .scene-name { color: var(--ink-faint); }
+.scene-head .live-clock {
   color: var(--ink-dim);
   letter-spacing: 0.3em;
   font-variant-numeric: tabular-nums;
@@ -110,8 +91,8 @@ html, body {
 }
 .monitor.drift-1 { animation: drift-flicker 11s steps(1, end) infinite; }
 
-/* drift 2：外框本身開始不可信——幾何抽搐、螢光色偏、
-   REC 燈失序。 */
+/* drift 2：外框本身開始不可信——幾何抽搐、色偏，
+   連文字一起被波及。 */
 @keyframes drift-glitch {
   0%, 86.9%, 100% { transform: translate(0); filter: none; }
   87%   { transform: translateX(-2px) skewX(-0.6deg); filter: hue-rotate(18deg) brightness(0.85); }
@@ -120,7 +101,6 @@ html, body {
   91%   { transform: translate(0); }
 }
 .monitor.drift-2 { animation: drift-glitch 7s steps(1, end) infinite; }
-.monitor.drift-2 .dot { animation: rec-blink 0.9s steps(2, end) infinite; }
 
 /* ============== 三欄 grid ============== */
 .scene-grid {
@@ -547,7 +527,6 @@ pre {
   .col-narrative { order: 2; }
   .col-rules { order: 1; }
   .col-actions { order: 3; }
-  .monitor::before, .monitor::after { font-size: 9px; }
   #app { padding: 8px; }
   /* 單欄堆疊時敘事欄矮一點，免得把行動欄推到一長串捲動之外。 */
   .narrative-stream { max-height: 42vh; }
@@ -561,6 +540,5 @@ pre {
   .action-btn { font-size: 12px; padding: 10px 12px; }
   .rulebook { font-size: 12px; }
   .rulebook-summary { padding: 10px 12px; }
-  .monitor-status { font-size: 9px; padding: 6px 10px; }
-  .monitor-status span:nth-child(2) { display: none; }
+  .scene-head { font-size: 9px; padding: 6px 10px; letter-spacing: 0.25em; }
 }

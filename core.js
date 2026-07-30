@@ -296,19 +296,14 @@ export function renderScene(sceneId) {
     // still detached, so getElementById returned null and the stream
     // stayed empty.
     const grid = el("div", { class: "scene-grid" }, [rulesCol, narrCol, actCol]);
-    // CRT monitor chrome: the status bar owns REC / channel / clock directly
-    // (border-straddling ::before/::after badges were dropped — they crowded
-    // the bar). The frame itself is what drift leaks into (see drift-* CSS).
+    // Chrome is deliberately minimal: the reader is *inside* the place, not
+    // watching it on a monitor — so no surveillance jargon (REC/CH-04/LED).
+    // Just the place name and the room clock, quiet like a document header.
+    // Drift leaks into this frame and the text itself (see drift-* CSS).
     const monitor = el("div", { class: "monitor" + driftClass(state) }, [
-      el("div", { class: "monitor-status" }, [
-        el("span", { class: "status-left" }, [
-          el("span", { class: "dot" }),
-          "監視中 · " + scene.title,
-        ]),
-        el("span", { class: "status-right" }, [
-          el("span", { class: "status-ch" }, "CH-04"),
-          el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
-        ]),
+      el("div", { class: "scene-head" }, [
+        el("span", { class: "scene-name" }, scene.title),
+        el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
       ]),
       grid,
     ]);
