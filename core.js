@@ -303,7 +303,7 @@ export function renderScene(sceneId) {
       el("div", { class: "monitor-status" }, [
         el("span", { class: "status-left" }, [
           el("span", { class: "dot" }),
-          "REC · " + scene.title,
+          "監視中 · " + scene.title,
         ]),
         el("span", { class: "status-right" }, [
           el("span", { class: "status-ch" }, "CH-04"),
