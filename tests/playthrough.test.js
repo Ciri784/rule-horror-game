@@ -48,10 +48,32 @@ describe("深夜飯店 playthrough", () => {
     act(state, ctx, "look-card");
     expect(state.drift).toBe(0);
     state.crossedMidnight = true;
-    state.time = 6 * 60;                                       // 閒置到天亮,一直待在房裡
+    state.time = 6 * 60 + 10;                              // 閒置到第二聲鈴,一直待在房裡
     act(state, ctx, "look-door");
     expect(state.ended).toBe("checked-out");
     expect(state.doorNumber).toBe("602");
+  });
+
+  it("GOOD ending (checkout): 第一聲鈴後收行李,第二聲鈴前把房卡交回櫃台", () => {
+    const { state, ctx } = newRun();
+    state.crossedMidnight = true;
+    state.time = 6 * 60;                                       // 六點,第一聲鈴
+    act(state, ctx, "look-door");                              // 觸發 derive → 聽到鈴
+    expect(can(state, ctx, "pack-bag")).toBe(true);
+    act(state, ctx, "pack-bag");
+    act(state, ctx, "go-lobby");
+    expect(state.identity).toBe("guest");                      // 天亮後持卡在大廳是來退房的
+    expect(can(state, ctx, "checkout-desk")).toBe(true);
+    act(state, ctx, "checkout-desk");
+    expect(state.ended).toBe("checked-out-desk");
+  });
+
+  it("六點整還不能退房: 第一聲鈴響時待在房裡不會觸發天亮退房", () => {
+    const { state, ctx } = newRun();
+    state.crossedMidnight = true;
+    state.time = 6 * 60;
+    act(state, ctx, "look-door");
+    expect(state.ended).toBeFalsy();
   });
 
   it("BAD ending (resident): in-room drift turns the door to 704 and the room takes you", () => {
@@ -69,6 +91,7 @@ describe("深夜飯店 playthrough", () => {
   it("BAD ending (clerk): wandering out of your room past midnight gets you claimed", () => {
     const { state, ctx } = newRun();
     state.crossedMidnight = true;
+    state.time = 30;                                         // 00:30,離天亮還早
     act(state, ctx, "go-lobby");                               // 半夜離開 → intruder → 被收走
     expect(state.ended).toBe("claimed-by-clerk");
   });

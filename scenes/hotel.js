@@ -6,7 +6,7 @@
 // 玩家拿到 4 本守則，沒有一本會告訴你「信我」或「別信我」；
 // 哪一條把你往 704 推，你得自己做。
 
-import { pickUp, moveTo, unlockRule, formatTime } from "../engine.js";
+import { pickUp, moveTo, unlockRule, formatTime, narrate } from "../engine.js";
 
 const CARD_NUMBER = "602";   // 房卡上的號碼
 const HIDDEN_NUMBER = "704"; // 房間自己翻出來的號碼
@@ -27,6 +27,7 @@ const ITEMS = {
   "staff-manual": { label: "員工守則" },
   "shift-note":   { label: "夜班守則" },
   "note-704":     { label: "門縫下的紙" },
+  "log-book":     { label: "交班簿" },
 };
 
 const RULEBOOKS = {
@@ -104,15 +105,49 @@ const RULES = {
 const JUDGES = [
   // 上了七樓就是闖進來的人——夜班守則第二條。
   { when: (s) => s.location === "floor-7", identity: "intruder" },
+  // 天亮了，持有房卡的客人在大廳是來退房的，不是闖進來的。
+  { when: (s) => has(s, "guest-card") && s.location === "lobby" && s.crossedMidnight && s.time >= 6 * 60, identity: "guest" },
   { when: (s) => has(s, "staff-card") && s.time >= 18 * 60 && s.time < 22 * 60, identity: "staff" },
   { when: (s) => has(s, "staff-card"), identity: "intruder" },
   { when: (s) => has(s, "guest-card") && s.location === "my-room", identity: "guest" },
   { when: (s) => has(s, "guest-card"), identity: "intruder" },
 ];
 
+const HOUR_EVENTS = [
+  { h: 0, text: "走廊有人走過去。腳步很慢，拖著什麼東西。" },
+  { h: 1, text: "樓下電梯叮了一聲。你沒有按。" },
+  { h: 2, text: "隔壁房間的電視開了。你貼著牆聽——是雪花聲。" },
+  { h: 3, text: "整層樓的燈暗了一秒。門牌的綠光晃了一下。", drift: true },
+  { h: 4, text: "遠處有鈴聲，很短，像試音。不是六點那種。" },
+  { h: 5, text: "走廊有人拖行李。停在你的門口，又走開了。" },
+];
+
 function derive(s) {
   if (s.drift >= DRIFT_FLIP) s.doorNumber = HIDDEN_NUMBER;
   else if (s.doorNumber == null) s.doorNumber = CARD_NUMBER;
+
+  // 每小時環境事件（午夜後每小時觸發一次）
+  const heard = s._heard || (s._heard = {});
+  if (s.crossedMidnight) {
+    for (const ev of HOUR_EVENTS) {
+      const mins = ev.h * 60;
+      if (s.time >= mins && !heard[mins]) {
+        heard[mins] = true;
+        narrate(s, ev.text, "ambience");
+        if (ev.drift && s.location === "my-room" && s.doorNumber === CARD_NUMBER) s.drift += 1;
+      }
+    }
+    // 六點鈴聲（rg6）
+    if (s.time >= 6 * 60 && !heard[360]) {
+      heard[360] = true;
+      narrate(s, "早上六點。鈴聲響了。", "ambience");
+    }
+    // 六點十分，第二次鈴
+    if (s.time >= 6 * 60 + 10 && !heard[370]) {
+      heard[370] = true;
+      narrate(s, "鈴響第二次。走廊安靜下來。", "ambience");
+    }
+  }
 }
 
 function unlockBook(ids, s, c) {
@@ -157,6 +192,16 @@ function actions(state, ctx) {
           s.time += 2;
         } });
     }
+    if (has(state, "guest-card")) {
+      out.push({ id: "card-pillow",
+        label: state._cardOnPillow ? "把房卡收回口袋" : "把房卡放在枕頭旁",
+        onChoose: (s, c) => {
+          s._cardOnPillow = !s._cardOnPillow;
+          if (s._cardOnPillow) c.narrate("你把房卡放在枕頭旁邊。睡覺時它會在那裡。");
+          else c.narrate("你把房卡收回口袋。");
+          s.time += 1;
+        } });
+    }
     out.push({ id: "look-room", label: "看一下房間",
       onChoose: (s, c) => {
         if (s.drift === 0) {
@@ -192,8 +237,8 @@ function actions(state, ctx) {
             c.narrate("你盯著看了三秒。螢幕上那扇門沒有倒影。");
           } else if (s.tvOff) {
             s.drift += 1; s.tvOff = false;
-            c.narrate("電視自己跳回去了。畫面是一條你沒走過的走廊，燈一盞一盞亮著，鏡頭正對著盡頭一扇門。");
-            c.narrate("你盯著看了三秒。螢幕上那扇門沒有倒影。");
+            c.narrate("電視自己跳回去了。還是那條走廊，但燈暗了一盞。");
+            c.narrate("螢幕上那扇門開了一條縫。");
           } else {
             c.narrate("你又打開電視。畫面一樣是那條走廊，門的倒影這次比較長。");
           }
@@ -324,7 +369,8 @@ function actions(state, ctx) {
         }
 
         s.time += 120;
-        if (n >= 3) s.drift += 1;
+        if (n >= 3 && !s._cardOnPillow) s.drift += 1;
+        else if (n >= 3) c.narrate("房卡就在枕頭旁邊。你睡得比平常安穩。");
 
         if (n === 1) {
           c.narrate("你躺下來，盯著天花板。床單有清潔劑的味道。");
@@ -357,6 +403,16 @@ function actions(state, ctx) {
           }
         }
       } });
+    // 六點鈴響後（rg6）：收拾行李，趕在第二次鈴前去櫃台。
+    if (state._heard && state._heard[360] && !state._packed && state.doorNumber === CARD_NUMBER) {
+      out.push({ id: "pack-bag", label: "收拾行李",
+        onChoose: (s, c) => {
+          s._packed = true;
+          c.narrate("你把行李收拾好。東西不多，幾分鐘就完了。");
+          c.narrate("鈴聲還沒響第二次。你還有時間。");
+          s.time += 5;
+        } });
+    }
     // 鑰匙有兩個用途：開 704 的門（結局），或拿來試電梯面板（去七樓）。
     if (has(state, "key-704") && state.doorNumber === HIDDEN_NUMBER && !state._keyUsedOnDoor) {
       out.push({ id: "unlock-704", label: "用鑰匙開門",
@@ -372,7 +428,7 @@ function actions(state, ctx) {
     }
     out.push({ id: "go-lobby", label: "出門，下樓",
       onChoose: (s, c) => {
-        if (s.crossedMidnight) {
+        if (s.crossedMidnight && s.time < 6 * 60) {
           s.drift += 2;
           c.narrate("你開門，走進走廊。");
           c.narrate("走廊的燈在你身後一盞一盞熄掉。你沒回頭數。");
@@ -467,6 +523,17 @@ function actions(state, ctx) {
           s.time += 2;
         } });
     }
+    // 鈴響後退房（rg6）：收好行李的房客可以交回房卡。
+    if (state._packed && has(state, "guest-card") && state.doorNumber === CARD_NUMBER) {
+      out.push({ id: "checkout-desk", label: "把房卡交回櫃台",
+        onChoose: (s, c) => {
+          s._checkedOutAtDesk = true;
+          c.narrate("你把房卡放在櫃台上。他接過去，翻了翻登記簿。");
+          c.narrate("他找到你的名字，劃掉一行，說：您是今晚第一個退房的。");
+          c.narrate("你走出旋轉門。外面的空氣很涼。");
+          s.time += 2;
+        } });
+    }
   }
 
   else if (at("staff-corridor")) {
@@ -517,6 +584,20 @@ function actions(state, ctx) {
           c.narrate("你把時間軸往前推——他從一扇門裡走出來。");
           c.narrate("門牌是 704。");
           s.time += 2;
+        } });
+    }
+    if (!has(state, "log-book")) {
+      out.push({ id: "read-log", label: "翻桌上的交班簿",
+        onChoose: (s, c) => {
+          pickUp("log-book", s, c);
+          c.narrate("螢幕下方壓著一本交班簿，封面被翻得很軟。");
+          c.narrate("第一頁的字很工整：巡房正常。登記簿上都是 602。");
+          c.narrate("第三頁：監視器多了一格。門牌 704。我沒有上去。");
+          c.narrate("第五頁的字開始歪：櫃台說我的房間換好了。我不記得我有房間。");
+          c.narrate("最後一頁是空的。但紙面上有壓痕，像有人寫完又擦掉了。");
+          c.narrate("壓痕勉強辨認出一句：鑰匙不用還。看到這本的人，就是我。");
+          s._readLog = true;
+          s.time += 3;
         } });
     }
     out.push({ id: "go-staff", label: "回員工通道",
@@ -579,10 +660,20 @@ const ENDINGS = [
     text: "門在你身後關上。\n房間跟你的不一樣——床單是新的，枕頭下沒有東西。\n你拉開床頭櫃，抽屜裡有一把銅鑰匙，齒磨得剛好。\n門牌寫 704。你把房卡放回口袋。\n房卡上的字，不見了。",
     when: (s) => s._entered704Floor === true },
 
+  // 讀過交班簿、帶著員工證、上了七樓、撐過午夜——你成為下一個交班的人。
+  { id: "handover", label: "交班",
+    text: "你站在 704 門口，突然明白了。\n那本簿子的最後一頁不是空的——是還沒寫。\n你從口袋裡拿出員工證，翻到背面，用指甲刻下自己的名字。\n電梯的燈亮了。你走了進去。\n明天晚上，會有另一個人翻到這本簿子。",
+    when: (s) => s._readLog && has(s, "staff-card") && s.location === "floor-7" && s.crossedMidnight && s.drift >= 2 },
+
   // 門牌被房間翻成 704、還在房裡、撐過午夜。
   { id: "resident", label: "換了一張房卡",
     text: "早上六點，門牌還是 704。\n你把原本的房卡放回口袋，發現口袋裡是空的——鑰匙不知道什麼時候不見了。\n櫃台那邊遞來一張新的房卡。你沒看上面的號碼，只看到自己走進電梯。\n面板上沒有 4，但有一層是亮的。",
     when: (s) => s.doorNumber === HIDDEN_NUMBER && s.location === "my-room" && s.crossedMidnight === true },
+
+  // 鈴響第二次之前，把房卡交回櫃台。
+  { id: "checked-out-desk", label: "退房",
+    text: "你把房卡交回櫃台。他翻了翻登記簿，找到你的名字，劃掉一行。\n他說：您是今晚第一個退房的。\n你走出旋轉門。陽光很亮，停車場空蕩蕩的。\n你回頭看了一眼。電梯面板上，有一層燈亮著。",
+    when: (s) => s._checkedOutAtDesk === true },
 
   // 身份不是房客、撐過午夜。
   { id: "claimed-by-clerk", label: "被叫去開門",
@@ -592,7 +683,7 @@ const ENDINGS = [
   // 撐到天亮、房牌從頭到尾是 602、還在自己房間。
   { id: "checked-out", label: "天亮退房",
     text: "六點整，房間的電話響了。\n你拿起話筒，沒有人說話，只有一聲很輕的喀。\n門牌從頭到尾都是 602。\n你把房卡交回櫃台，櫃台的人看了一眼，跟你說：歡迎下次再來。\n你走出旋轉門的時候，電梯面板的燈剛好熄掉一層。",
-    when: (s) => s.crossedMidnight === true && s.time >= 6 * 60 && s.time < 23 * 60
+    when: (s) => s.crossedMidnight === true && s.time >= 6 * 60 + 10 && s.time < 23 * 60
               && s.doorNumber === CARD_NUMBER && s.identity === "guest" && s.location === "my-room" },
 ];
 
@@ -607,7 +698,7 @@ export const hotel = {
   initialIdentity: "guest",
   initialLocation: "my-room",
   initialTime: 23 * 60,
-  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _tvSeen: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false, _roomChanged: false, _closedEyes: false },
+  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _tvSeen: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false, _roomChanged: false, _closedEyes: false, _cardOnPillow: false, _packed: false, _checkedOutAtDesk: false, _readLog: false },
   rules: RULES,
   rulebooks: RULEBOOKS,
   judges: JUDGES,

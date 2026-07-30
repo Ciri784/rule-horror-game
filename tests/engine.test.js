@@ -106,7 +106,7 @@ describe("endings", () => {
   it("checked-out fires for a guest still in 602 at dawn", () => {
     const { state } = boot();
     state.crossedMidnight = true;
-    state.time = 6 * 60;
+    state.time = 6 * 60 + 10;                              // 第二聲鈴之後還在房裡才算天亮退房
     expect(checkEndings(hotel, state, silent).id).toBe("checked-out");
   });
   it("nothing ends at the 23:00 spawn (regression: 開場即死)", () => {
