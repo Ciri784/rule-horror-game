@@ -133,19 +133,25 @@ function derive(s) {
       const mins = ev.h * 60;
       if (s.time >= mins && !heard[mins]) {
         heard[mins] = true;
-        narrate(s, ev.text, "ambience");
+        // 睡著或快轉錯過的整點不補播:你沒聽見就是沒聽見。
+        // 三點的偏移照樣發生——你看不看,房間都在動。
+        if (s.time - mins <= 5) narrate(s, ev.text, "ambience");
         if (ev.drift && s.location === "my-room" && s.doorNumber === CARD_NUMBER) s.drift += 1;
       }
     }
     // 六點鈴聲（rg6）
     if (s.time >= 6 * 60 && !heard[360]) {
       heard[360] = true;
-      narrate(s, "早上六點。鈴聲響了。", "ambience");
+      narrate(s, s.time - 6 * 60 <= 5
+        ? "早上六點。鈴聲響了。"
+        : "你看向時鐘——六點的鈴,已經響過了。", "ambience");
     }
     // 六點十分，第二次鈴
     if (s.time >= 6 * 60 + 10 && !heard[370]) {
       heard[370] = true;
-      narrate(s, "鈴響第二次。走廊安靜下來。", "ambience");
+      narrate(s, s.time - (6 * 60 + 10) <= 5
+        ? "鈴響第二次。走廊安靜下來。"
+        : "第二次鈴也響過了。走廊一直很安靜。", "ambience");
     }
   }
 }
@@ -687,7 +693,7 @@ const ENDINGS = [
 
   // 門牌被房間翻成 704、還在房裡、撐過午夜。
   { id: "resident", label: "換了一張房卡",
-    text: "早上六點，門牌還是 704。\n你把原本的房卡放回口袋，發現口袋裡是空的——鑰匙不知道什麼時候不見了。\n櫃台那邊遞來一張新的房卡。你沒看上面的號碼，只看到自己走進電梯。\n面板上沒有 4，但有一層是亮的。",
+    text: "門牌還是 704。這一次，它不打算變回去了。\n你把原本的房卡放回口袋，發現口袋裡是空的——鑰匙不知道什麼時候不見了。\n櫃台那邊遞來一張新的房卡。你沒看上面的號碼，只看到自己走進電梯。\n面板上沒有 4，但有一層是亮的。",
     when: (s) => s.doorNumber === HIDDEN_NUMBER && s.location === "my-room" && s.crossedMidnight === true },
 
   // 鈴響第二次之前，把房卡交回櫃台。
@@ -702,7 +708,7 @@ const ENDINGS = [
 
   // 撐到天亮、房牌從頭到尾是 602、還在自己房間。
   { id: "checked-out", label: "天亮退房",
-    text: "六點整，房間的電話響了。\n你拿起話筒，沒有人說話，只有一聲很輕的喀。\n門牌從頭到尾都是 602。\n你把房卡交回櫃台，櫃台的人看了一眼，跟你說：歡迎下次再來。\n你走出旋轉門的時候，電梯面板的燈剛好熄掉一層。",
+    text: "房間的電話響了。\n你拿起話筒，沒有人說話，只有一聲很輕的喀。\n門牌從頭到尾都是 602。\n你把房卡交回櫃台，櫃台的人看了一眼，跟你說：歡迎下次再來。\n你走出旋轉門的時候，電梯面板的燈剛好熄掉一層。",
     when: (s) => s.crossedMidnight === true && s.time >= 6 * 60 + 10 && s.time < 23 * 60
               && s.doorNumber === CARD_NUMBER && s.identity === "guest" && s.location === "my-room" },
 ];
