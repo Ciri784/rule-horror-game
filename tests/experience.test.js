@@ -64,3 +64,14 @@ describe("hotel flavor action repeat noise", () => {
     expect(texts(state)).toContain("電梯在樓上停了");
   });
 });
+
+describe("night-desk urgency flag", () => {
+  it("isUrgent reflects activeEvent", () => {
+    const { state } = run(nightDesk);
+    expect(nightDesk.isUrgent(state)).toBe(false);
+    state.time = 1400;
+    evaluateTriggers(nightDesk, state);
+    expect(state.activeEvent).toBe("ev-drunk");
+    expect(nightDesk.isUrgent(state)).toBe(true);
+  });
+});

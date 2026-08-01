@@ -348,6 +348,7 @@ export const nightDesk = {
   },
   derive,
   actions,
+  isUrgent: (s) => !!s.activeEvent,
   endings: ENDINGS,
   ui: {
     visitLabel: (n) => `第 ${n} 次值班`,

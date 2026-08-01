@@ -366,6 +366,19 @@ li.amended::after {
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .action-btn:disabled::before { content: " "; }
 
+/* 限時處置狀態：事件上門時行動欄整體轉紅。不用數字倒數——
+   壓迫感交給顏色與脈動，精確秒數交給不安。 */
+.col-title.urgent { color: var(--accent); }
+.col-actions.urgent .action-btn {
+  border-color: var(--accent);
+  background: rgba(210,74,74,0.07);
+  animation: urgent-pulse 2.4s ease-in-out infinite;
+}
+@keyframes urgent-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(210,74,74,0); }
+  50% { box-shadow: 0 0 8px rgba(210,74,74,0.35); }
+}
+
 /* ============== 重置按鈕 ============== */
 .reset-block {
   margin-top: 18px;
@@ -523,7 +536,8 @@ pre {
 @media (max-width: 900px) {
   .scene-grid { grid-template-columns: 1fr; }
   .col { padding: 18px 16px 22px 16px; }
-  .col-actions { border-top: 1px solid var(--border); }
+  /* 行動欄吸底：敘事再長也不用滑到底才點得到。 */
+  .col-actions { border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 5; background: var(--bg); }
   .col-narrative { order: 2; }
   .col-rules { order: 1; }
   .col-actions { order: 3; }

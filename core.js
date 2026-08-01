@@ -55,6 +55,7 @@ const UI_DEFAULTS = {
   rulesTitle: "已知規則",
   nowTitle: "此刻",
   actionsTitle: "您可以",
+  urgentTitle: "處置",
   reset: "重置本關",
   home: "回到首頁",
   restart: "重新開始",
@@ -180,6 +181,9 @@ export function renderScene(sceneId) {
   // Which rulebooks the player has expanded. Lives here (view state, not game
   // state) so it survives every rerender() but resets on a fresh scene load.
   const openBooks = new Set();
+  // 規則是玩法的核心對照物，進場景時預設全部攤開；玩家手動收合後，
+  // openBooks 會在這個 scene view 的生命期內記住收合狀態。
+  if (scene.rulebooks) for (const name of Object.keys(scene.rulebooks)) openBooks.add(name);
 
   // --- Idle time catch-up ---
   // Time also advances with real time between renders (5 real seconds = 1
@@ -226,8 +230,12 @@ export function renderScene(sceneId) {
     const streamEl = el("div", { class: "narrative-stream", id: "narrative-stream" });
     narrCol.appendChild(streamEl);
     // 行動欄 (right on desktop, bottom on mobile)
-    const actCol = el("aside", { class: "col col-actions" });
-    actCol.appendChild(el("h2", { class: "col-title" }, label(scene, "actionsTitle")));
+    // 場景自報限時狀態（例如夜班的事件上門）：行動欄換標題、換皮，
+    // 讓玩家一眼知道「現在不回應，時間會替你回應」。
+    const urgent = scene.isUrgent ? !!scene.isUrgent(state) : false;
+    const actCol = el("aside", { class: "col col-actions" + (urgent ? " urgent" : "") });
+    actCol.appendChild(el("h2", { class: "col-title" + (urgent ? " urgent" : "") },
+      label(scene, urgent ? "urgentTitle" : "actionsTitle")));
     const ending = state.ended ? scene.endings.find((e) => e.id === state.ended) : null;
     if (ending) {
       actCol.appendChild(el("div", { class: "scene-end" }, [
