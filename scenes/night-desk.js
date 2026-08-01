@@ -194,8 +194,32 @@ function findEventDef(id) {
 
 // ── 衍生狀態：事件排程 ──
 // 每步呼叫一次：沒有事件時，到點就讓事件上門；有事件時，逾時就套用 timeout。
+// ── 環境敘事池 ──
+// 到點就播，無論有無事件；錯過超過十分鐘不補播——你沒看見就是沒看見。
+// 03:00 那條跟住客篇對時：同一秒，兩個視角。
+const AMBIENCE = [
+  { t: 1410, text: "冷氣的聲音低了一階。你抬頭看，出風口沒有在動。" },
+  { t: 1440, text: "整點。打卡機自己亮了一下，又暗掉。沒有人打卡。" },
+  { t: 1510, text: "大廳的沙發皮面響了一聲，像有人剛站起來。沙發是空的。" },
+  { t: 1560, text: "電梯的樓層燈從 3 慢慢熄回 1。今晚沒有人按電梯。" },
+  { t: 1590, text: "很遠的地方有吸塵器的聲音。這一層，只有你，和櫃台。" },
+  { t: 1620, text: "三點整。大廳的燈暗了一秒。同一秒，電梯叮了一聲——樓層燈往上跳，停在一個你沒見過的數字。停了很久。然後燈熄了，電梯安安分分停在 1 樓，門沒有開過。" },
+  { t: 1660, text: "玻璃門外起了霧。你記得入夜的時候是晴天。" },
+  { t: 1710, text: "地毯的花紋，你數到第七種的時候，決定不要再數了。" },
+  { t: 1755, text: "天快亮了。大廳的亮開始像早上的那種亮——但還不是。" },
+];
+
 function derive(state) {
   if (state.ended) return;
+
+  // 環境敘事：每步先掃，到點即播，錯過不補。
+  const ambHeard = state._ambHeard || (state._ambHeard = {});
+  for (const a of AMBIENCE) {
+    if (state.time >= a.t && !ambHeard[a.t]) {
+      ambHeard[a.t] = true;
+      if (state.time - a.t <= 10) narrate(state, a.text);
+    }
+  }
 
   if (!state.activeEvent) {
     // 連鎖事件優先
@@ -275,9 +299,10 @@ function actions(state, ctx) {
 
 function registerText(s) {
   const lines = ["你翻開登記簿，今晚的格子一格一格安安分分。"];
+  lines.push("你的視線停在 704 那一格——那裡有一個名字，字跡跟交班簿裡前任的一樣。「那格已經寫了。」原來是這個意思。");
   if (s.drunkAdmitted) lines.push("那個醉客的名字在，字跡是你的。你還是不記得你寫過。");
-  if (s.openedDoor) lines.push("704 那一格暈開了一塊，像被水泡過。");
-  else lines.push("你的視線繞過了 704 那一格。不是你決定繞過的。");
+  if (s.openedDoor) lines.push("704 那一格暈開了一塊，像被水泡過。那個名字還在，在水漬底下。");
+  if (s.time >= 1620) lines.push("你把今晚的格子從頭看了一遍。最下面多了一行，是你的名字。墨還沒乾。——你在值班，不在住宿。");
   return lines.join("");
 }
 

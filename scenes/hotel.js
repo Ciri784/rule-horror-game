@@ -117,7 +117,7 @@ const HOUR_EVENTS = [
   { h: 0, text: "走廊有人走過去。腳步很慢，拖著什麼東西。" },
   { h: 1, text: "樓下電梯叮了一聲。你沒有按。" },
   { h: 2, text: "隔壁房間的電視開了。你貼著牆聽——是雪花聲。" },
-  { h: 3, text: "整層樓的燈暗了一秒。門牌的綠光晃了一下。", drift: true },
+  { h: 3, text: "整層樓的燈暗了一秒。門牌的綠光晃了一下。同一秒，你聽見電梯在樓上停了。很久，沒有開門聲。", drift: true },
   { h: 4, text: "遠處有鈴聲，很短，像試音。不是六點那種。" },
   { h: 5, text: "走廊有人拖行李。停在你的門口，又走開了。" },
 ];
@@ -171,7 +171,8 @@ function actions(state, ctx) {
     if (has(state, "guest-card")) {
       out.push({ id: "look-card", label: "看房卡",
         onChoose: (s, c) => {
-          c.narrate(`房卡邊角磨白了，印著 ${CARD_NUMBER}。你走進這間房時櫃台遞給你的，還溫的。`);
+          if (s._seenLookCard) c.narrate(`房卡還是那張。${CARD_NUMBER}。`);
+          else { s._seenLookCard = true; c.narrate(`房卡邊角磨白了，印著 ${CARD_NUMBER}。你走進這間房時櫃台遞給你的，還溫的。`); }
           if (s.doorNumber !== CARD_NUMBER) {
             c.narrate("你又翻過來看了房卡一次。房卡沒變過。");
           } else if (s.drift >= 2) {
@@ -295,7 +296,8 @@ function actions(state, ctx) {
       } });
     out.push({ id: "look-bed", label: "看床",
       onChoose: (s, c) => {
-        c.narrate("單人床，白床單，枕頭放得很整齊。");
+        if (s._seenLookBed) c.narrate("床還是那張床。你不想再檢查第二次。");
+        else { s._seenLookBed = true; c.narrate("單人床，白床單，枕頭放得很整齊。"); }
         if (!has(s, "staff-card")) {
           c.narrate("枕頭中間有點凹，像有人壓過。");
         }
@@ -500,8 +502,12 @@ function actions(state, ctx) {
       } });
     out.push({ id: "look-elevator", label: "看電梯面板",
       onChoose: (s, c) => {
-        c.narrate("電梯面板亮著：1、2、3、5、6。");
-        c.narrate("4 的位置是一塊刮痕，像有人用鑰匙劃過。");
+        if (s._seenLookElevator) c.narrate("1、2、3、5、6。4 的位置還是那道刮痕。你忍住沒數第二遍。");
+        else {
+          s._seenLookElevator = true;
+          c.narrate("電梯面板亮著：1、2、3、5、6。");
+          c.narrate("4 的位置是一塊刮痕，像有人用鑰匙劃過。");
+        }
         if (has(s, "key-704")) {
           c.narrate("你把鑰匙拿出來比了一下。");
           c.narrate("齒跟那道刮痕的寬度差不多。");
