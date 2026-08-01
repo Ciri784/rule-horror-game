@@ -133,6 +133,24 @@ export function checkEndings(scene, state, ctx) {
   return null;
 }
 
+// Advance the in-game clock. Two time models exist:
+//   "cycle" (default): time is time-of-day, wraps at 24h; wrapping sets
+//     state.crossedMidnight (hotel's dawn logic depends on this).
+//   "shift": monotonic minutes, never wraps. night-desk runs 1380→1800,
+//     so 03:00 is 1620 — a cycle wrap at 1440 would reset the clock to 0,
+//     strand the active event past its expiry, and kill every post-midnight
+//     window and the 06:00 ending. (core.js used to hardcode the wrap.)
+export function advanceClock(scene, state, minutes) {
+  const DAY = 24 * 60;
+  const before = state.time;
+  state.time += minutes;
+  if ((scene.timeModel || "cycle") === "cycle") {
+    state.time %= DAY;
+    if (state.time < before) state.crossedMidnight = true;
+  }
+  return state.time;
+}
+
 export function formatTime(mins) {
   const h = Math.floor(mins / 60) % 24;
   const m = mins % 60;

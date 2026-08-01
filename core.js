@@ -16,7 +16,7 @@
 
 import {
   loadState, saveState, clearState,
-  narrate, evaluateTriggers, checkEndings, formatTime,
+  narrate, evaluateTriggers, checkEndings, formatTime, advanceClock,
   freshState, rulesFor, applyAction, migrateState,
 } from "./engine.js";
 
@@ -196,10 +196,7 @@ export function renderScene(sceneId) {
     const elapsedMs = now - lastTick;
     if (elapsedMs >= 5000) {
       const tickMinutes = Math.floor(elapsedMs / 5000);
-      const before = state.time;
-      const DAY = 24 * 60;
-      state.time = (state.time + tickMinutes) % DAY;
-      if (state.time < before) state.crossedMidnight = true;
+      advanceClock(scene, state, tickMinutes);
       narrate(state, `（時間過去了。房間的時鐘指向 ${formatTime(state.time)}。）`, "system");
       state._lastTickAt = now;
       // A catch-up can cross midnight or reach dawn, so re-run derived state
@@ -337,13 +334,10 @@ export function renderScene(sceneId) {
   // so idle ticks don't stomp scroll position or the just-typed animation.
   stopTick();
   if (!state.ended) {
-    const DAY = 24 * 60;
     tickHandle = setInterval(() => {
       if (state.ended) { stopTick(); return; }
       const narrBefore = Array.isArray(state.narrative) ? state.narrative.length : 0;
-      const before = state.time;
-      state.time = (state.time + 1) % DAY;
-      if (state.time < before) state.crossedMidnight = true;
+      advanceClock(scene, state, 1);
       state._lastTickAt = Date.now();
       evaluateTriggers(scene, state);
       checkEndings(scene, state, ctx);

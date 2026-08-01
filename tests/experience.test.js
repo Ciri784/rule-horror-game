@@ -75,3 +75,37 @@ describe("night-desk urgency flag", () => {
     expect(nightDesk.isUrgent(state)).toBe(true);
   });
 });
+
+describe("advanceClock time models", () => {
+  it("cycle scenes wrap at midnight and set crossedMidnight (hotel)", async () => {
+    const { advanceClock } = await import("../engine.js");
+    const { state } = run(hotel);
+    state.time = 1439;
+    advanceClock(hotel, state, 1);
+    expect(state.time).toBe(0);
+    expect(state.crossedMidnight).toBe(true);
+  });
+
+  it("shift scenes never wrap (night-desk)", async () => {
+    const { advanceClock } = await import("../engine.js");
+    const { state } = run(nightDesk);
+    state.time = 1439;
+    advanceClock(nightDesk, state, 1);
+    expect(state.time).toBe(1440);
+  });
+
+  it("a full unattended shift reaches 06:00 and an ending", async () => {
+    const { advanceClock, evaluateTriggers, checkEndings } = await import("../engine.js");
+    const { state, ctx } = run(nightDesk);
+    for (let i = 0; i < 430 && !state.ended; i++) {
+      advanceClock(nightDesk, state, 1);
+      evaluateTriggers(nightDesk, state);
+      checkEndings(nightDesk, state, ctx);
+    }
+    expect(state.time).toBeGreaterThanOrEqual(1800);
+    expect(state.ended).toBeTruthy();
+    // 午夜後的事件與 03:00 對時 ambience 都有跑到
+    expect(texts(state)).toContain("三點整");
+    expect(texts(state)).toContain("敲門");
+  });
+});

@@ -348,6 +348,7 @@ export const nightDesk = {
   },
   derive,
   actions,
+  timeModel: "shift",
   isUrgent: (s) => !!s.activeEvent,
   endings: ENDINGS,
   ui: {
