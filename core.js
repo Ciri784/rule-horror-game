@@ -17,7 +17,7 @@
 import {
   loadState, saveState, clearState,
   narrate, evaluateTriggers, checkEndings, formatTime,
-  freshState, rulesFor, applyAction,
+  freshState, rulesFor, applyAction, migrateState,
 } from "./engine.js";
 
 const scenes = {};
@@ -160,7 +160,9 @@ export function renderScene(sceneId) {
   }
 
   // Saves are versioned (see STORAGE_PREFIX); a load either returns a
-  // current-shape state or null, so no in-place migration is needed.
+  // current-shape state or null. migrateState fills any initialState keys
+  // missing from an older save of the same version so newly-added
+  // scene-private fields never start as undefined.
   let state = loadState(sceneId);
   const fresh = !state;
   if (fresh) {
@@ -169,6 +171,8 @@ export function renderScene(sceneId) {
     state.visitCount = visitCount;
     saveState(sceneId + ":visits", visitCount);
     saveState(sceneId, state);
+  } else {
+    migrateState(scene, state);
   }
 
   const ctx = { scene, visitCount: state.visitCount, fresh, narrate: (text, kind) => narrate(state, text, kind) };

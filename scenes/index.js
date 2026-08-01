@@ -4,7 +4,9 @@
 // lists them in this order.
 
 import { hotel } from "./hotel.js";
+import { nightDesk } from "./night-desk.js";
 
 export const scenes = [
   hotel,
+  nightDesk,
 ];

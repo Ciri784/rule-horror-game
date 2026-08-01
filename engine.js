@@ -11,7 +11,7 @@
 
 // Bump the version segment whenever the persisted state shape changes; old
 // saves under a previous version are simply ignored (a fresh run starts).
-const STORAGE_PREFIX = "rule-horror:v2:";
+const STORAGE_PREFIX = "rule-horror:v3:";
 
 export function loadState(id) {
   try { const r = localStorage.getItem(STORAGE_PREFIX + id); return r ? JSON.parse(r) : null; }
@@ -59,7 +59,9 @@ export function freshState(scene, now = Date.now()) {
       ? [...scene.initialUnlockedRuleIds]
       : [],
     // Scene-private state (e.g. hotel's { doorNumber, drift, tvOff }).
-    ...(scene.initialState || {}),
+    // Deep-cloned: a shallow spread would share nested arrays/objects
+    // (e.g. night-desk's doneEvents) across every fresh run.
+    ...(scene.initialState ? structuredClone(scene.initialState) : {}),
   };
 }
 
@@ -172,6 +174,16 @@ export function unlockRule(ruleId, state) {
   if (state.unlockedRuleIds.includes(ruleId)) return false;
   state.unlockedRuleIds.push(ruleId);
   return true;
+}
+
+// Fill any missing initialState keys in a loaded save so newly-added
+// scene-private fields get their defaults instead of undefined.
+export function migrateState(scene, state) {
+  if (!scene || !scene.initialState) return;
+  const defaults = scene.initialState;
+  for (const key of Object.keys(defaults)) {
+    if (!(key in state)) state[key] = defaults[key];
+  }
 }
 
 // Run one player action the same way renderScene does. Returns the

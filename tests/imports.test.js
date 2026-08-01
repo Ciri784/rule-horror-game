@@ -22,16 +22,17 @@ describe("module exports align with core.js imports", () => {
     expect(typeof core.listScenes).toBe("function");
   });
 
-  it("engine.js surface is exactly the 13 exports core.js depends on", async () => {
+  it("engine.js surface is exactly the 14 exports core.js depends on", async () => {
     const engine = await import("../engine.js");
     // core.js 真實用到的:loadState, saveState, clearState, narrate,
     // evaluateTriggers, checkEndings, formatTime, freshState, rulesFor,
-    // applyAction。core.js 不會直接呼叫 pickUp / moveTo / unlockRule,
-    // 但 engine.js 內部會跑、所以也列入。
+    // applyAction, migrateState。core.js 不會直接呼叫 pickUp / moveTo /
+    // unlockRule,但 engine.js 內部會跑、所以也列入。
     const expected = [
       "loadState", "saveState", "clearState", "narrate",
       "freshState", "rulesFor", "evaluateTriggers", "checkEndings",
       "formatTime", "pickUp", "moveTo", "unlockRule", "applyAction",
+      "migrateState",
     ];
     for (const name of expected) {
       expect(typeof engine[name]).toBe("function");
