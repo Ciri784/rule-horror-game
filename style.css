@@ -931,24 +931,30 @@ pre {
   letter-spacing: 0.08em;
 }
 
-/* 聲音開關:固定在視窗右下,深色 chip,在暗色外框與泛黃紙面上都讀得到。 */
+/* 聲音開關:不做成網頁元件,做成文件邊角的一行註記。
+   無底色無框,打字機字型加全形括號,墨色跟著場景主題走。 */
 .audio-toggle {
   position: fixed;
-  right: 14px;
-  bottom: 12px;
+  right: 18px;
+  bottom: 14px;
   z-index: 60;
   font-family: "Courier New", ui-monospace, monospace;
   font-size: 12px;
-  letter-spacing: 0.1em;
-  padding: 5px 10px;
-  color: #9aa392;
-  background: rgba(10, 10, 12, 0.78);
-  border: 1px solid rgba(200, 211, 185, 0.25);
-  border-radius: 3px;
+  letter-spacing: 0.14em;
+  padding: 2px 4px;
+  color: #66755f;
+  background: none;
+  border: none;
+  border-bottom: 1px dotted rgba(102, 117, 95, 0.5);
   cursor: pointer;
-  opacity: 0.75;
+  opacity: 0.8;
+  transform: rotate(-0.6deg);
 }
-.audio-toggle:hover { opacity: 1; border-color: rgba(200, 211, 185, 0.55); }
+.audio-toggle:hover { opacity: 1; color: #93a389; border-bottom-color: rgba(147, 163, 137, 0.7); }
+.audio-toggle.t-hotel { color: #7a683c; border-bottom-color: rgba(122, 104, 60, 0.5); }
+.audio-toggle.t-hotel:hover { color: #5d4d31; border-bottom-color: rgba(93, 77, 49, 0.75); }
+.audio-toggle.t-nightdesk { color: #4d5c52; border-bottom-color: rgba(77, 92, 82, 0.5); }
+.audio-toggle.t-nightdesk:hover { color: #26312b; border-bottom-color: rgba(38, 49, 43, 0.75); }
 
 /* ============== Mobile ============== */
 @media (max-width: 900px) {

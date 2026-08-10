@@ -121,10 +121,17 @@ export function toggleAudio() {
   return on;
 }
 
+// 按鈕長得像文件邊角的註記,不像網頁元件;文字全形中括號,不加 emoji。
+function btnLabel() {
+  return audioIsOn() ? "〔聲音 · 開〕" : "〔聲音 · 關〕";
+}
+
 export function setSceneSound(theme) {
   if (theme === currentTheme) return;
   currentTheme = theme;
   if (ctx) { applyLayers(); scheduleAmbient(); }
+  // 註記的墨色跟著場所走(紙上是褐墨、夜班是灰綠、檔案室是暗綠)。
+  if (btnEl) btnEl.className = "audio-toggle" + (theme ? ` t-${theme}` : "");
 }
 
 export function setDriftLevel(n) {
@@ -190,10 +197,10 @@ export function audioButtonEl() {
     btnEl.className = "audio-toggle";
     btnEl.addEventListener("click", () => {
       toggleAudio();
-      btnEl.textContent = audioIsOn() ? "🔊 聲音" : "🔇 靜音";
+      btnEl.textContent = btnLabel();
     });
   }
-  btnEl.textContent = audioIsOn() ? "🔊 聲音" : "🔇 靜音";
+  btnEl.textContent = btnLabel();
   if (!btnEl.isConnected) document.body.appendChild(btnEl);
   // 上次 session 開著聲音:瀏覽器要求本頁的第一個手勢才能解鎖
   // AudioContext,所以在第一個點擊/按鍵時才真正開聲。
