@@ -850,6 +850,87 @@ pre {
 .theme-nightdesk .home-btn:hover { background: var(--ink-dim); color: var(--bg-2); }
 .theme-nightdesk .reset-btn:hover { background: var(--accent); color: var(--bg-2); }
 
+/* ============== 預言、結案單、檔案室異變 ============== */
+/* 預言敘事：時間戳是未來的那一行。引擎不提示，只有顏色微微不對。 */
+.narr-row.kind-omen .narr-time { color: var(--accent); }
+.narr-row.kind-omen .narr-text {
+  color: var(--accent-soft);
+  text-shadow: 0 0 3px rgba(210, 74, 74, 0.25);
+}
+
+/* 結案單：結局戳章旁的收據 */
+.receipt {
+  margin: 14px auto 4px auto;
+  max-width: 240px;
+  padding: 12px 16px 14px 16px;
+  background: var(--bg-2);
+  border: 1px dashed var(--border);
+  transform: rotate(-0.8deg);
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.receipt-head {
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed var(--border);
+}
+.receipt-row { padding: 1.5px 0; }
+.receipt-bar {
+  margin-top: 10px;
+  height: 24px;
+  background: repeating-linear-gradient(90deg,
+    var(--ink) 0 2px, transparent 2px 5px,
+    var(--ink) 5px 6px, transparent 6px 9px,
+    var(--ink) 9px 12px, transparent 12px 14px);
+  opacity: 0.65;
+}
+.receipt-foot {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--ink-faint);
+  letter-spacing: 0.12em;
+}
+
+/* 檔案室異變 */
+.archive-whisper {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+.folder-record {
+  margin: 8px 0 0 0;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 12px;
+  color: #7a683c;
+  letter-spacing: 0.05em;
+}
+/* 耳位自己換了邊 */
+.folder.tab-flip .folder-tab { left: auto; right: 30px; }
+.folder:nth-child(even).tab-flip .folder-tab { left: 30px; right: auto; }
+/* 沒有登記的卷宗 */
+.folder.ghost {
+  filter: saturate(0.3) brightness(0.9);
+  border-style: dashed;
+  cursor: pointer;
+}
+.folder.ghost .folder-tab { color: #8e2f24; border-style: dashed; }
+.folder.ghost .name { color: #5d4d31; }
+.ghost-whisper {
+  margin: 10px 0 0 0;
+  font-family: "Kaiti TC", "DFKai-SB", "TW-Kai", "BiauKai", cursive;
+  font-size: 14px;
+  color: #8e2f24;
+  letter-spacing: 0.08em;
+}
+
 /* ============== Mobile ============== */
 @media (max-width: 900px) {
   .scene-grid { grid-template-columns: 1fr; }

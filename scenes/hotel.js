@@ -733,6 +733,13 @@ export const hotel = {
   initialLocation: "my-room",
   initialTime: 23 * 60,
   initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _tvSeen: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false, _roomChanged: false, _closedEyes: false, _cardOnPillow: false, _packed: false, _checkedOutAtDesk: false, _readLog: false },
+  // 預言：02:20 走廊的燈會暗一秒——01:35 起記錄裡先出現那條
+  // 時間不對的記錄，時間到了它真的發生。（cycle 時鐘，訂在午夜後）
+  omens: [
+    { id: "corridor-light", at: 2 * 60 + 20, lead: 45,
+      foretell: "走廊的燈暗了一秒，又亮起來。",
+      happen: "走廊的燈暗了一秒，又亮起來。你想起剛才那條時間不對的記錄。" },
+  ],
   rules: RULES,
   rulebooks: RULEBOOKS,
   judges: JUDGES,

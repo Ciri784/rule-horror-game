@@ -332,6 +332,12 @@ export const nightDesk = {
   openingNarrative: "23:00。你打卡，坐上櫃台後面的椅子。\n大廳很亮，亮得讓你數得出地毯的花紋。電梯面板在視線的角落，你決定先不要數它有幾顆鈕。\n抽屜裡有一份印好的櫃台守則，和一本寫滿字的交班簿。前任的字很急，最後一頁只有一句：輪到你了。",
   initialTime: SHIFT_START,
   initialUnlockedRuleIds: ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "h1", "h2", "h3"],
+  // 預言：01:55 電梯會自己開一次門。（shift 時鐘，01:55 = 1555）
+  omens: [
+    { id: "elevator-empty", at: 1555, lead: 45,
+      foretell: "電梯響了一聲，門開了。裡面沒有人。",
+      happen: "電梯響了一聲，門開了。裡面沒有人。你低頭確認了一眼時間——和剛才那條記錄分秒不差。" },
+  ],
   rules: RULES,
   rulebooks: RULEBOOKS,
   initialState: {

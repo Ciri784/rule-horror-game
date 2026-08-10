@@ -24,8 +24,13 @@ export function clearState(id) {
   try { localStorage.removeItem(STORAGE_PREFIX + id); } catch {}
 }
 
-export function narrate(state, text, kind) {
-  state.narrative.push({ time: state.time, kind: kind || "narration", text });
+export function narrate(state, text, kind, atTime) {
+  state.narrative.push({
+    // atTime：預言用的未來時間戳。一般敘事不給，就蓋當下時鐘。
+    time: typeof atTime === "number" ? atTime : state.time,
+    kind: kind || "narration",
+    text,
+  });
 }
 
 // Build a clean state for a scene. Only universal fields live here; a scene
@@ -119,6 +124,32 @@ export function evaluateTriggers(scene, state) {
   // Generic per-step hook: scenes with derived state implement `derive(state)`;
   // scenes without it are unaffected.
   if (typeof scene.derive === "function") scene.derive(state);
+
+  evaluateOmens(scene, state);
+}
+
+// --- Omens (未來的敘事) ---
+// scene.omens: [{ id, at, lead, foretell, happen, when? }]。`at`/`lead` 用場景
+// 自己的時鐘分鐘數；cycle 場景請把兩者都訂在午夜後，直接比大小即可。
+// at 前 lead 分鐘起，敘事流會出現一條【時間戳是未來】的記錄 (kind "omen")；
+// 時鐘真正走到 at 時，被預言的事件發生。引擎永遠不標示哪條是預言——
+// 那個不對勁的時間戳是唯一的線索。
+function evaluateOmens(scene, state) {
+  if (!Array.isArray(scene.omens) || state.ended) return;
+  state._omens = state._omens || {};
+  for (const o of scene.omens) {
+    const rec = state._omens[o.id] || (state._omens[o.id] = {});
+    if (typeof o.when === "function" && !o.when(state)) continue;
+    if (!rec.foretold && state.time >= o.at - o.lead && state.time < o.at) {
+      rec.foretold = true;
+      narrate(state, o.foretell, "omen", o.at);
+    }
+    if (!rec.happened && state.time >= o.at) {
+      rec.foretold = true;
+      rec.happened = true;
+      narrate(state, o.happen, "narration");
+    }
+  }
 }
 
 export function checkEndings(scene, state, ctx) {

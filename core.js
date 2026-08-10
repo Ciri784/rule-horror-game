@@ -14,6 +14,7 @@
 //     theme?: string,             // 場景視覺主題：外框加上 .theme-<name>，
 //                                 // 配色與質感由 style.css 的對應區塊接管
 //     archive?: { no?, stamp? },  // 首頁檔案室：檔案編號 / 歸檔章文字
+//     omens?: [{ id, at, lead, foretell, happen, when? }],  // 未來時間戳的預言敘事
 //   }
 //   onChoose may call ctx.narrate(text, kind?) to push a narration entry.
 
@@ -216,6 +217,13 @@ export function renderScene(sceneId) {
   }
 
   function rerender() {
+    // 結案歸檔：結局達成時寫進檔案室記錄（_filed 保證一局只歸檔一次），
+    // 首頁卷宗的調閱章與檔案室的異變程度都靠這份記錄。
+    if (state.ended && !state._filed) {
+      fileEndingRecord(scene, state);
+      state._filed = true;
+      saveState(sceneId, state);
+    }
     appRoot().innerHTML = "";
 
     // 規則欄 (left on desktop, top on mobile)
@@ -243,6 +251,7 @@ export function renderScene(sceneId) {
     if (ending) {
       actCol.appendChild(el("div", { class: "scene-end" }, [
         el("div", { class: "stamp" }, ending.label),
+        receiptEl(scene, state, ending),
         el("a", { href: "#", onclick: (ev) => { ev.preventDefault(); restart(); } },
           el("button", { class: "restart" }, label(scene, "restart"))),
       ]));
@@ -392,18 +401,66 @@ function renderNarrativeStream(stream, state) {
     stream.appendChild(row);
   }
 }
+// --- 檔案室記錄 ---
+// 結局歸檔存在獨立 key（不走場景存檔），首頁據此決定卷宗上的調閱記錄，
+// 以及檔案室本身「不對勁」的程度。
+function archiveRecords() {
+  return loadState("archive:records") || {};
+}
+function fileEndingRecord(scene, state) {
+  const recs = archiveRecords();
+  const r = recs[scene.id] || (recs[scene.id] = { filedCount: 0, last: null });
+  const e = scene.endings.find((x) => x.id === state.ended);
+  r.filedCount += 1;
+  r.last = {
+    endingId: state.ended,
+    label: e ? e.label : String(state.ended),
+    clock: formatTime(state.time),
+    visit: state.visitCount,
+  };
+  saveState("archive:records", recs);
+}
+
+// 結案單：結局戳章旁的一張收據，印有場所、結局、時間與調閱次數。
+function receiptEl(scene, state, ending) {
+  return el("div", { class: "receipt" }, [
+    el("div", { class: "receipt-head" }, "結　案　單"),
+    el("div", { class: "receipt-row" }, `場所：${scene.title}`),
+    el("div", { class: "receipt-row" }, `結局：${ending.label}`),
+    el("div", { class: "receipt-row" }, `時間：${formatTime(state.time)}`),
+    el("div", { class: "receipt-row" }, `調閱：第 ${state.visitCount} 次`),
+    el("div", { class: "receipt-bar" }),
+    el("div", { class: "receipt-foot" }, "Rule Horror 檔案室 · 經辦"),
+  ]);
+}
+
 export function renderIndex() {
   stopTick();
   appRoot().innerHTML = "";
   // 首頁是一間檔案室：每個場所是一份被歸檔的卷宗，玩家是來調閱的人。
   // 卷宗編號與歸檔章由 scene.archive 提供，沒給就用順序補一個編號。
-  const room = el("div", { class: "archive-room" });
-  room.appendChild(el("header", { class: "archive-head" }, [
+  //
+  // 但檔案室本身也是一個場所。結案記錄累積後，這裡會慢慢不對勁：
+  //   strange 1（結案 ≥1）：限閱註記多一行、第一只卷宗的耳位自己換邊。
+  //   strange 2（結案 ≥2）：架上多出一只沒有登記的卷宗，點開只有一張房卡。
+  const recs = archiveRecords();
+  const totalFiled = Object.values(recs).reduce((n, r) => n + (r.filedCount || 0), 0);
+  const strange = totalFiled >= 2 ? 2 : totalFiled >= 1 ? 1 : 0;
+
+  const head = [
     el("div", { class: "archive-plate" }, "規則怪談集"),
     el("p", { class: "archive-sub" },
       "這些是從不同場所流出的守則。每一份都自稱能保護您。多數是真的。"),
-    el("div", { class: "archive-note" }, "本室文件限本人調閱 · 閱後請歸檔"),
-  ]));
+    el("div", { class: "archive-note" },
+      strange >= 1 ? "本室文件限本人調閱 · 閱後請歸檔 · 請勿攜出"
+                   : "本室文件限本人調閱 · 閱後請歸檔"),
+  ];
+  if (strange >= 2) {
+    head.push(el("div", { class: "archive-whisper" }, "（架上的卷宗比昨天多了一份。）"));
+  }
+  const room = el("div", { class: "archive-room" + (strange ? ` strange-${strange}` : "") },
+    [el("header", { class: "archive-head" }, head)]);
+
   const shelf = el("div", { class: "archive-shelf" });
   let i = 0;
   for (const s of listScenes()) {
@@ -411,16 +468,46 @@ export function renderIndex() {
     const arc = s.archive || {};
     const no = arc.no || `RH-${String(i).padStart(3, "0")}`;
     const stamp = arc.stamp || "已歸檔";
-    shelf.appendChild(el("a", { class: "folder", href: "#" + s.id, onclick: (ev) => {
-      ev.preventDefault(); location.hash = s.id;
-    } }, [
+    const body = [
+      el("h2", { class: "name" }, s.title),
+      el("p", { class: "blurb" }, s.blurb || ""),
+      el("span", { class: "folder-stamp" }, stamp),
+    ];
+    // 調閱記錄：來過幾次、結案幾次、最近一次的結局。
+    const visits = loadState(s.id + ":visits") || 0;
+    const rec = recs[s.id];
+    if (visits > 0 || rec) {
+      const parts = [`調閱 ${visits} 次`];
+      if (rec && rec.filedCount) {
+        parts.push(`結案 ${rec.filedCount} 次`);
+        if (rec.last) parts.push(`最近：${rec.last.label}`);
+      }
+      body.push(el("p", { class: "folder-record" }, parts.join(" · ")));
+    }
+    shelf.appendChild(el("a", {
+      class: "folder" + (strange >= 1 && i === 1 ? " tab-flip" : ""),
+      href: "#" + s.id,
+      onclick: (ev) => { ev.preventDefault(); location.hash = s.id; },
+    }, [
       el("div", { class: "folder-tab" }, no),
-      el("div", { class: "folder-body" }, [
-        el("h2", { class: "name" }, s.title),
-        el("p", { class: "blurb" }, s.blurb || ""),
-        el("span", { class: "folder-stamp" }, stamp),
-      ]),
+      el("div", { class: "folder-body" }, body),
     ]));
+  }
+  if (strange >= 2) {
+    let whispered = false;
+    const ghost = el("div", { class: "folder ghost", onclick: () => {
+      if (whispered) return;
+      whispered = true;
+      ghost.querySelector(".folder-body").appendChild(
+        el("p", { class: "ghost-whisper" }, "（裡面沒有文件。只有一張房卡，卡面寫著 602。）"));
+    } }, [
+      el("div", { class: "folder-tab" }, "無編號"),
+      el("div", { class: "folder-body" }, [
+        el("h2", { class: "name" }, "████"),
+        el("p", { class: "blurb" }, "這只卷宗沒有登記。它不該在架上。"),
+      ]),
+    ]);
+    shelf.appendChild(ghost);
   }
   room.appendChild(shelf);
   room.appendChild(el("div", { class: "meta" }, "Rule Horror · Ciri784"));
