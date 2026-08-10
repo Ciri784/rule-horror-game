@@ -77,6 +77,7 @@
 | `theme` | string | 場景視覺主題。遊玩畫面外框會加上 `.theme-<name>`,配色與質感由 `style.css` 的對應區塊接管(現有 `theme-hotel`)。不給 = 預設的暗色監視器質感。 |
 | `archive` | object | `{ no, stamp }`。首頁檔案室的卷宗編號與歸檔章文字;不給則編號自動補 `RH-00n`、章用「已歸檔」。 |
 | `omens` | array | `[{ id, at, lead, foretell, happen, when?, cue? }]`。預言敘事:`at` 前 `lead` 分鐘起,敘事流出現一條時間戳是 `at` 的記錄(kind `omen`);時鐘走到 `at` 時事件真的發生,瞬間播放 `cue` 音效(`"ding"`/`"thump"`/`"flicker"`)。cycle 場景請把 `at` 訂在午夜後,直接比大小。 |
+| `rule.mutate` | object | 可選。`{ from, to, when(state) }`:條件成立時,該條守則顯示文字中第一個 `from` 被替換成渗紅手寫體的 `to`。**只改顯示,引擎永遠照原文判定**——「守則是真的」,變的是字。`from` 必須真的出現在原文裡(有測試把關)。 |
 
 ---
 

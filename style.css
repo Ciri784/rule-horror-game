@@ -1004,6 +1004,41 @@ pre {
   transform: rotate(-1deg);
 }
 
+/* 規則突變:被改掉的那幾個字渗紅色手寫體。 */
+.rule-mutated {
+  font-family: "Kaiti TC", "DFKai-SB", "TW-Kai", "BiauKai", cursive;
+  color: #8e2f24;
+}
+
+/* 歸檔原件:卷宗裡的抽拉式抄件,比卷宗紙更白一階。 */
+.folder-original-toggle {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #6a5c3a;
+  background: none;
+  border: none;
+  border-bottom: 1px dotted rgba(106, 92, 58, 0.55);
+  padding: 1px 2px;
+  cursor: pointer;
+}
+.folder-original-toggle:hover { color: #463b22; border-bottom-color: #463b22; }
+.folder-original {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 252, 240, 0.55);
+  border: 1px solid rgba(90, 76, 45, 0.25);
+  font-size: 12px;
+  line-height: 1.7;
+  cursor: default;
+}
+.original-head { letter-spacing: 0.2em; color: #6a5c3a; margin-bottom: 6px; }
+.original-book { margin: 6px 0; }
+.original-book-title { font-weight: bold; }
+.folder-original ol { margin: 2px 0 8px 0; padding-left: 20px; }
+
 /* ============== Mobile ============== */
 @media (max-width: 900px) {
   .scene-grid { grid-template-columns: 1fr; }

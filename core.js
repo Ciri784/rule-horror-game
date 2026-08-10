@@ -94,6 +94,21 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
+// 規則文字突變:事實不變,字變。rule.mutate = { from, to, when(state) },
+// 引擎永遠照原文判定,這裡只改顯示。被改掉的那幾個字渗紅色手寫體。
+function ruleBodyEl(rule, state) {
+  const m = rule.mutate;
+  if (m && typeof m.when === "function" && m.when(state) && rule.text.includes(m.from)) {
+    const i = rule.text.indexOf(m.from);
+    return el("span", { class: "rule-body" }, [
+      rule.text.slice(0, i),
+      el("span", { class: "rule-mutated" }, m.to),
+      rule.text.slice(i + m.from.length),
+    ]);
+  }
+  return el("span", { class: "rule-body" }, rule.text);
+}
+
 function renderRules(scene, state, openBooks) {
   // Each rulebook is a <details> dropdown. The player collects rulebooks by
   // holding the matching items; each is collapsed until opened. Multiple
@@ -140,7 +155,7 @@ function renderRules(scene, state, openBooks) {
       rules.forEach((rule, i) => {
         ol.appendChild(el("li", { class: "rule" }, [
           el("span", { class: "rule-num" }, `第 ${i + 1} 條`),
-          el("span", { class: "rule-body" }, rule.text),
+          ruleBodyEl(rule, state),
         ]));
       });
       details.appendChild(ol);
@@ -157,7 +172,7 @@ function renderRules(scene, state, openBooks) {
   list.forEach((rule, i) => {
     ol.appendChild(el("li", { class: "rule" }, [
       el("span", { class: "rule-num" }, `第 ${i + 1} 條`),
-      el("span", { class: "rule-body" }, rule.text),
+      ruleBodyEl(rule, state),
     ]));
   });
   return ol;
@@ -539,6 +554,37 @@ export function renderIndex() {
         if (rec.last) parts.push(`最近：${rec.last.label}`);
       }
       body.push(el("p", { class: "folder-record" }, parts.join(" · ")));
+    }
+    // 歸檔原件:檔案室收著當初存檔的正確版本,只展示玩家實際收集過的條文。
+    // 場所裡的字會變,這裡的不會——要對答案,回檔案室。
+    const saved = loadState(s.id);
+    const unlockedIds = saved && Array.isArray(saved.unlockedRuleIds) ? saved.unlockedRuleIds : [];
+    const byBook = [];
+    for (const [rid, rule] of Object.entries(s.rules || {})) {
+      if (!unlockedIds.includes(rid)) continue;
+      const b = rule.book || "其他";
+      let g = byBook.find((x) => x[0] === b);
+      if (!g) { g = [b, []]; byBook.push(g); }
+      g[1].push(rule.text);
+    }
+    if (byBook.length) {
+      const panel = el("div", { class: "folder-original" }, [
+        el("div", { class: "original-head" }, `歸檔原件 · ${no}`),
+        ...byBook.map(([b, texts]) => el("div", { class: "original-book" }, [
+          el("div", { class: "original-book-title" }, `《${b}》`),
+          el("ol", {}, texts.map((t) => el("li", {}, t))),
+        ])),
+      ]);
+      panel.style.display = "none";
+      body.push(el("button", {
+        class: "folder-original-toggle",
+        onclick: (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          panel.style.display = panel.style.display === "none" ? "" : "none";
+        },
+      }, "調閱原件"));
+      body.push(panel);
     }
     shelf.appendChild(el("a", {
       class: "folder" + (strange >= 1 && i === 1 ? " tab-flip" : ""),
