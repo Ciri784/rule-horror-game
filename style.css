@@ -931,6 +931,25 @@ pre {
   letter-spacing: 0.08em;
 }
 
+/* 聲音開關:固定在視窗右下,深色 chip,在暗色外框與泛黃紙面上都讀得到。 */
+.audio-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 12px;
+  z-index: 60;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  padding: 5px 10px;
+  color: #9aa392;
+  background: rgba(10, 10, 12, 0.78);
+  border: 1px solid rgba(200, 211, 185, 0.25);
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+.audio-toggle:hover { opacity: 1; border-color: rgba(200, 211, 185, 0.55); }
+
 /* ============== Mobile ============== */
 @media (max-width: 900px) {
   .scene-grid { grid-template-columns: 1fr; }

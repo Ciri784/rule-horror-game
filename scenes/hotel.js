@@ -737,8 +737,9 @@ export const hotel = {
   // 時間不對的記錄，時間到了它真的發生。（cycle 時鐘，訂在午夜後）
   omens: [
     { id: "corridor-light", at: 2 * 60 + 20, lead: 45,
-      foretell: "走廊的燈暗了一秒，又亮起來。",
-      happen: "走廊的燈暗了一秒，又亮起來。你想起剛才那條時間不對的記錄。" },
+      cue: "flicker",
+      foretell: "走廊的燈暗了一秒,又亮起來。",
+      happen: "走廊的燈暗了一秒,又亮起來。你想起剛才那條時間不對的記錄。" },
   ],
   rules: RULES,
   rulebooks: RULEBOOKS,

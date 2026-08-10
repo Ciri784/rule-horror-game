@@ -23,6 +23,9 @@ import {
   narrate, evaluateTriggers, checkEndings, formatTime, advanceClock,
   freshState, rulesFor, applyAction, migrateState,
 } from "./engine.js";
+import {
+  setSceneSound, setDriftLevel, playCue, audioButtonEl,
+} from "./audio.js";
 
 const scenes = {};
 
@@ -36,9 +39,13 @@ function stopTick() {
 
 // Scenes keep private fields on state; `drift` is the horror-leak level the
 // monitor chrome reacts to (0 = none, 1 = flicker, 2+ = glitch).
-function driftClass(state) {
+function driftLevel(state) {
   const d = typeof state.drift === "number" ? state.drift : 0;
-  return d >= 2 ? " drift-2" : d === 1 ? " drift-1" : "";
+  return d >= 2 ? 2 : d === 1 ? 1 : 0;
+}
+function driftClass(state) {
+  const l = driftLevel(state);
+  return l === 2 ? " drift-2" : l === 1 ? " drift-1" : "";
 }
 
 // $app is only meaningful in a browser. Resolve lazily so this module is
@@ -216,6 +223,20 @@ export function renderScene(sceneId) {
     }
   }
 
+  // 預言音效:預言的事件「真的發生」的那一刻播放對應的 cue(電梯叮、
+  // 燈管閃爍)。載入存檔時已發生過的預言不重播——initial 掃描只標記不播音。
+  const playedOmenCues = new Set();
+  function checkOmenCues(initial) {
+    if (!Array.isArray(scene.omens) || !state._omens) return;
+    for (const o of scene.omens) {
+      const rec = state._omens[o.id];
+      if (!rec || !rec.happened || playedOmenCues.has(o.id)) continue;
+      playedOmenCues.add(o.id);
+      if (!initial && o.cue) playCue(o.cue);
+    }
+  }
+  checkOmenCues(true);
+
   function rerender() {
     // 結案歸檔：結局達成時寫進檔案室記錄（_filed 保證一局只歸檔一次），
     // 首頁卷宗的調閱章與檔案室的異變程度都靠這份記錄。
@@ -333,6 +354,10 @@ export function renderScene(sceneId) {
       grid,
     ]);
     appRoot().appendChild(monitor);
+    // 聲音:場景主題決定聲層(首頁檔案室=null),drift 讓 drone 跟著變質。
+    setSceneSound(scene.theme || null);
+    setDriftLevel(driftLevel(state));
+    audioButtonEl();
     renderNarrativeStream(streamEl, state);
 
 
@@ -362,6 +387,8 @@ export function renderScene(sceneId) {
       if (clock) clock.textContent = formatTime(state.time);
       const mon = document.querySelector(".monitor");
       if (mon) mon.className = "monitor" + themeCls + driftClass(state);
+      setDriftLevel(driftLevel(state));
+      checkOmenCues(false);
       const narrAfter = Array.isArray(state.narrative) ? state.narrative.length : 0;
       if (state.ended || narrAfter !== narrBefore) rerender();
     }, 5000);
@@ -435,6 +462,11 @@ function receiptEl(scene, state, ending) {
 }
 
 export function renderIndex() {
+  // 檔案室的聲音:最輕的房間底噪,沒有主題聲層。
+  setSceneSound(null);
+  setDriftLevel(0);
+  audioButtonEl();
+
   stopTick();
   appRoot().innerHTML = "";
   // 首頁是一間檔案室：每個場所是一份被歸檔的卷宗，玩家是來調閱的人。

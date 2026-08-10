@@ -335,8 +335,9 @@ export const nightDesk = {
   // 預言：01:55 電梯會自己開一次門。（shift 時鐘，01:55 = 1555）
   omens: [
     { id: "elevator-empty", at: 1555, lead: 45,
-      foretell: "電梯響了一聲，門開了。裡面沒有人。",
-      happen: "電梯響了一聲，門開了。裡面沒有人。你低頭確認了一眼時間——和剛才那條記錄分秒不差。" },
+      cue: "ding",
+      foretell: "電梯響了一聲,門開了。裡面沒有人。",
+      happen: "電梯響了一聲,門開了。裡面沒有人。你低頭確認了一眼時間——和剛才那條記錄分秒不差。" },
   ],
   rules: RULES,
   rulebooks: RULEBOOKS,
