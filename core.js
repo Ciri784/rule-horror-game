@@ -457,7 +457,7 @@ function receiptEl(scene, state, ending) {
     el("div", { class: "receipt-row" }, `時間：${formatTime(state.time)}`),
     el("div", { class: "receipt-row" }, `調閱：第 ${state.visitCount} 次`),
     el("div", { class: "receipt-bar" }),
-    el("div", { class: "receipt-foot" }, "Rule Horror 檔案室 · 經辦"),
+    el("div", { class: "receipt-foot" }, "第四十四號檔案室 · 經辦"),
   ]);
 }
 
@@ -480,7 +480,7 @@ export function renderIndex() {
   const strange = totalFiled >= 2 ? 2 : totalFiled >= 1 ? 1 : 0;
 
   const head = [
-    el("div", { class: "archive-plate" }, "規則怪談集"),
+    el("div", { class: "archive-plate" }, "第四十四號檔案室"),
     el("p", { class: "archive-sub" },
       "這些是從不同場所流出的守則。每一份都自稱能保護您。多數是真的。"),
     el("div", { class: "archive-note" },
