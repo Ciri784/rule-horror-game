@@ -723,6 +723,8 @@ export const hotel = {
   id: "hotel",
   title: "深夜飯店",
   blurb: "房卡上的號碼帶得進來。門牌不一定。",
+  theme: "hotel",
+  archive: { no: "RH-704", stamp: "限閱" },
   intro: "夜班。",
   openingNarrative: "夜裡十一點，你走進 602 號房，行李放上床。\n電梯面板上沒有 4 樓，你沒多想。\n櫃台遞房卡時順手塞了一張紙條：房客守則，入住前請過目。撐到早上六點。",
   initialItems: ["guest-card"],

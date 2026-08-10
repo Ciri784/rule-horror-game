@@ -480,46 +480,112 @@ li.amended::after {
   border-style: solid;
 }
 
-/* ============== 首頁 ============== */
-.scene-pick {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 640px;
-  margin: 60px auto;
-  padding: 0 24px;
+/* ============== 首頁 — 檔案室 ==============
+   玩家是來調閱卷宗的人。每個場所是一只牛皮紙卷宗夾：
+   上方突出檔案編號耳、右下角蓋歸檔章，整夾微微歪斜上架。 */
+.archive-room {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 32px 24px;
 }
-.scene-pick a {
-  display: block;
-  padding: 20px 22px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  text-decoration: none;
-  color: var(--ink);
-  transition: all 0.18s ease-out;
-  position: relative;
-}
-.scene-pick a::before {
-  content: "▸";
-  color: var(--accent);
-  margin-right: 10px;
+.archive-head { text-align: center; margin-bottom: 44px; }
+.archive-plate {
+  display: inline-block;
+  padding: 14px 42px;
+  font-size: 20px;
+  letter-spacing: 0.45em;
+  text-indent: 0.45em; /* 補 letter-spacing 尾端空隙，讓字真的置中 */
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  outline: 1px solid rgba(212,160,74,0.3);
+  outline-offset: 4px;
+  background: linear-gradient(180deg, #17130c, #100d08);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.6);
   font-weight: bold;
 }
-.scene-pick a:hover {
-  background: var(--bg-3);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: inset 4px 0 0 var(--accent);
-  text-shadow: 0 0 4px rgba(210,74,74,0.4);
+.archive-sub {
+  margin: 22px auto 0 auto;
+  max-width: 34em;
+  font-size: 13px;
+  color: var(--ink-dim);
+  letter-spacing: 0.08em;
 }
-.scene-pick h2 {
-  margin: 0 0 6px 0;
-  font-size: 18px;
-  letter-spacing: 0.1em;
+.archive-note {
+  margin-top: 14px;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--accent-soft);
+}
+
+.archive-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.folder {
+  display: block;
+  position: relative;
+  margin-top: 14px;               /* 讓卷宗耳有空間突出 */
+  text-decoration: none;
+  background: linear-gradient(160deg, #d9c9a2 0%, #cdbb90 55%, #c2ad7f 100%);
+  border: 1px solid #a8946a;
+  border-radius: 3px;
+  box-shadow: 0 3px 0 #8f7c56, 0 8px 22px rgba(0,0,0,0.55);
+  transition: transform 0.16s ease-out, box-shadow 0.16s ease-out;
+}
+.folder:nth-child(odd) { transform: rotate(-0.4deg); }
+.folder:nth-child(even) { transform: rotate(0.35deg); }
+.folder:hover {
+  transform: translateY(-4px) rotate(0deg);
+  box-shadow: 0 5px 0 #8f7c56, 0 16px 34px rgba(0,0,0,0.65);
+}
+.folder-tab {
+  position: absolute;
+  top: -13px;
+  left: 26px;
+  padding: 2px 14px 3px 14px;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #5d4d31;
+  background: #c2ad7f;
+  border: 1px solid #a8946a;
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+}
+.folder:nth-child(even) .folder-tab { left: auto; right: 30px; }
+.folder-body {
+  padding: 20px 24px 18px 24px;
+  color: #453723;
+}
+.folder-body .name {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: 0.2em;
+  font-weight: bold;
   display: inline;
 }
-.scene-pick p { margin: 6px 0 0 0; color: var(--ink-dim); font-size: 12px; }
-.scene-pick a:hover p { color: var(--ink); }
+.folder-body .blurb {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #6b5a3d;
+  letter-spacing: 0.06em;
+}
+.folder-stamp {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  padding: 3px 10px;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: #8e2f24;
+  border: 2px solid #8e2f24;
+  border-radius: 2px;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+  font-weight: bold;
+}
 
 /* ============== Error ============== */
 pre {
@@ -531,6 +597,112 @@ pre {
   background: rgba(210,74,74,0.05);
   font-family: "Courier New", ui-monospace, monospace;
 }
+
+/* ============== 場景主題：深夜飯店 (theme-hotel) ==============
+   整個畫面是一份泛黃的飯店文件：牛皮紙底、深棕油墨、朱紅戳章。
+   欄位標題改成文件式的雙線章節頭，規則欄像被翻舊的住房須知，
+   敘事欄鋪淡淡的帳簿橫線。drift glitch 照樣生效——紙本身會抽動。 */
+.monitor.theme-hotel {
+  --bg: #d6c7a4;
+  --bg-2: #e9dfc4;
+  --bg-3: #ddd0b0;
+  --ink: #3b3021;
+  --ink-dim: #6d5c44;
+  --ink-faint: #9c8c6e;
+  --accent: #8e2f24;
+  --accent-soft: #a5674f;
+  --amber: #7d5f22;
+  --phosphor: #55663f;
+  --border: rgba(59,48,33,0.30);
+  --border-soft: rgba(59,48,33,0.14);
+
+  border-color: #a8946a;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.35),
+    0 18px 50px rgba(0,0,0,0.6),
+    inset 0 0 60px rgba(120,90,40,0.10);
+}
+
+/* 信紙抬頭：雙細線 + 置中字距 */
+.theme-hotel .scene-head {
+  background: var(--bg-3);
+  border-bottom: 3px double var(--border);
+  letter-spacing: 0.5em;
+}
+.theme-hotel .scene-head .scene-name { color: var(--ink); font-weight: bold; }
+.theme-hotel .scene-head .live-clock { color: var(--ink-dim); }
+
+/* 章節頭：從紅色側條改成文件式底線標題 */
+.theme-hotel .col-title {
+  border-left: none;
+  background: none;
+  color: var(--ink);
+  padding: 0 2px 7px 2px;
+  border-bottom: 1px solid var(--ink-faint);
+  text-align: center;
+  letter-spacing: 0.5em;
+}
+.theme-hotel .col-title.urgent { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* 規則欄：翻舊的住房須知——水漬、摺痕感的紙 */
+.theme-hotel .col-rules {
+  background:
+    radial-gradient(ellipse 130px 70px at 88% 10%, rgba(120,90,40,0.12), transparent 70%),
+    radial-gradient(ellipse 220px 100px at 8% 88%, rgba(120,90,40,0.09), transparent 70%),
+    linear-gradient(105deg, transparent 0%, rgba(120,90,40,0.05) 48%, transparent 52%),
+    var(--bg-2);
+}
+/* 敘事欄：帳簿橫線 */
+.theme-hotel .col-narrative {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 26px, rgba(59,48,33,0.045) 26px 27px),
+    var(--bg-2);
+}
+.theme-hotel .col-actions { background: var(--bg-2); }
+
+/* 守則條目：打字機列印 */
+.theme-hotel ol.rules > li { border-bottom-style: dotted; }
+.theme-hotel .rule-num { color: var(--amber); }
+
+/* 守則本 = 別上去的便條 */
+.theme-hotel .rulebook {
+  background: var(--bg-3);
+  border-style: dashed;
+  border-color: var(--border);
+}
+.theme-hotel .rulebook[open] {
+  background: var(--bg);
+  border-color: var(--ink-faint);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+.theme-hotel .rulebook[open] > .rulebook-summary {
+  color: var(--accent);
+  text-shadow: none;
+}
+
+/* 行動按鈕：文件上的選項框 */
+.theme-hotel .action-btn {
+  background: transparent;
+  border-color: var(--border);
+}
+.theme-hotel .action-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  text-shadow: none;
+}
+.theme-hotel .action-btn:active {
+  background: var(--ink);
+  color: var(--bg-2);
+}
+.theme-hotel .col-actions.urgent .action-btn {
+  background: rgba(142,47,36,0.07);
+}
+
+/* 結局戳章顏色吃 var(--accent)，自動變朱紅；home/reset 按鈕同色調 */
+.theme-hotel .home-btn:hover { background: var(--ink-dim); color: var(--bg-2); }
+.theme-hotel .reset-btn:hover { background: var(--accent); color: var(--bg-2); }
 
 /* ============== Mobile ============== */
 @media (max-width: 900px) {

@@ -11,6 +11,9 @@
 //     endings: [{ id, label, when(state, ctx) -> bool, text }],
 //     ui?: { visitLabel?(n), restart?, rulesTitle?, nowTitle?, actionsTitle?,
 //            reset?, home?, emptyRules? },
+//     theme?: string,             // 場景視覺主題：外框加上 .theme-<name>，
+//                                 // 配色與質感由 style.css 的對應區塊接管
+//     archive?: { no?, stamp? },  // 首頁檔案室：檔案編號 / 歸檔章文字
 //   }
 //   onChoose may call ctx.narrate(text, kind?) to push a narration entry.
 
@@ -310,7 +313,8 @@ export function renderScene(sceneId) {
     // watching it on a monitor — so no surveillance jargon (REC/CH-04/LED).
     // Just the place name and the room clock, quiet like a document header.
     // Drift leaks into this frame and the text itself (see drift-* CSS).
-    const monitor = el("div", { class: "monitor" + driftClass(state) }, [
+    const themeCls = scene.theme ? ` theme-${scene.theme}` : "";
+    const monitor = el("div", { class: "monitor" + themeCls + driftClass(state) }, [
       el("div", { class: "scene-head" }, [
         el("span", { class: "scene-name" }, scene.title),
         el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
@@ -346,7 +350,7 @@ export function renderScene(sceneId) {
       const clock = document.getElementById("live-clock");
       if (clock) clock.textContent = formatTime(state.time);
       const mon = document.querySelector(".monitor");
-      if (mon) mon.className = "monitor" + driftClass(state);
+      if (mon) mon.className = "monitor" + themeCls + driftClass(state);
       const narrAfter = Array.isArray(state.narrative) ? state.narrative.length : 0;
       if (state.ended || narrAfter !== narrBefore) rerender();
     }, 5000);
@@ -389,22 +393,36 @@ function renderNarrativeStream(stream, state) {
 export function renderIndex() {
   stopTick();
   appRoot().innerHTML = "";
-  const card = el("div", { class: "scene-card" });
-  card.appendChild(el("h1", {}, "規則怪談集"));
-  card.appendChild(el("p", { class: "scene-intro" },
-    "這些是從不同場所流出的守則。每一份都自稱能保護您。多數是真的。"));
-  const pick = el("div", { class: "scene-pick" });
+  // 首頁是一間檔案室：每個場所是一份被歸檔的卷宗，玩家是來調閱的人。
+  // 卷宗編號與歸檔章由 scene.archive 提供，沒給就用順序補一個編號。
+  const room = el("div", { class: "archive-room" });
+  room.appendChild(el("header", { class: "archive-head" }, [
+    el("div", { class: "archive-plate" }, "規則怪談集"),
+    el("p", { class: "archive-sub" },
+      "這些是從不同場所流出的守則。每一份都自稱能保護您。多數是真的。"),
+    el("div", { class: "archive-note" }, "本室文件限本人調閱 · 閱後請歸檔"),
+  ]));
+  const shelf = el("div", { class: "archive-shelf" });
+  let i = 0;
   for (const s of listScenes()) {
-    pick.appendChild(el("a", { href: "#" + s.id, onclick: (ev) => {
+    i += 1;
+    const arc = s.archive || {};
+    const no = arc.no || `RH-${String(i).padStart(3, "0")}`;
+    const stamp = arc.stamp || "已歸檔";
+    shelf.appendChild(el("a", { class: "folder", href: "#" + s.id, onclick: (ev) => {
       ev.preventDefault(); location.hash = s.id;
     } }, [
-      el("h2", { class: "name" }, s.title),
-      el("p", { class: "blurb" }, s.blurb || ""),
+      el("div", { class: "folder-tab" }, no),
+      el("div", { class: "folder-body" }, [
+        el("h2", { class: "name" }, s.title),
+        el("p", { class: "blurb" }, s.blurb || ""),
+        el("span", { class: "folder-stamp" }, stamp),
+      ]),
     ]));
   }
-  card.appendChild(pick);
-  card.appendChild(el("div", { class: "meta" }, "Rule Horror · Ciri784"));
-  appRoot().appendChild(card);
+  room.appendChild(shelf);
+  room.appendChild(el("div", { class: "meta" }, "Rule Horror · Ciri784"));
+  appRoot().appendChild(room);
 }
 
 export function start() {
