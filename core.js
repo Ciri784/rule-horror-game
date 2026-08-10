@@ -497,22 +497,24 @@ export function renderIndex() {
   const room = el("div", { class: "archive-room" + (strange ? ` strange-${strange}` : "") },
     [el("header", { class: "archive-head" }, head)]);
 
-  // 管理員守則：貼在牆上的一張紙。每條都對應玩家實際碰過的異變，
-  // 但口吻始終是公事公辦的機構語言——落差本身就是恐怖。
+  // 管理員守則：貼在卷宗後方牆上的一張紙——上緣被最後一排卷宗遮住,
+  // 要往下捲才看得到。不是新貼的海報,是一直都在、只是平常被擋住。
+  // 每條都對應玩家實際碰過的異變,但口吻始終是公事公辦的機構語言。
+  let keeperRules = null;
   if (strange >= 3) {
     const KEEPER_RULES = [
-      "上架前請清點卷宗。數量與登記不符時，以架上數量為準。",
-      "卷宗耳位如有變動，屬正常歸檔作業，無需記錄。",
-      "本室不發放結案單。如您收到，請自行留存，勿上交。",
+      "上架前請清點卷宗。數量與登記不符時,以架上數量為準。",
+      "卷宗耳位如有變動,屬正常歸檔作業,無需記錄。",
+      "本室不發放結案單。如您收到,請自行留存,勿上交。",
       "調閱記錄由本室代填。請勿與本人記憶核對。",
-      "本室門牌為第四十四號。如您看見其他編號，請勿進入。",
+      "本室門牌為第四十四號。如您看見其他編號,請勿進入。",
       "本室沒有管理員。",
     ];
-    room.appendChild(el("div", { class: "keeper-rules" }, [
+    keeperRules = el("div", { class: "keeper-rules" }, [
       el("div", { class: "keeper-title" }, "管理員守則"),
       el("ol", {}, KEEPER_RULES.map((r) => el("li", {}, r))),
       el("div", { class: "keeper-red" }, "（守則是真的。）"),
-    ]));
+    ]);
   }
 
   const shelf = el("div", { class: "archive-shelf" });
@@ -564,6 +566,7 @@ export function renderIndex() {
     shelf.appendChild(ghost);
   }
   room.appendChild(shelf);
+  if (keeperRules) room.appendChild(keeperRules);
   room.appendChild(el("div", { class: "meta" }, "Rule Horror · Ciri784"));
   appRoot().appendChild(room);
 }
