@@ -31,7 +31,9 @@ html, body {
   /* Courier New 筆畫偏細，全域加半級字重換可讀性 */
   font-weight: 500;
   line-height: 1.7;
-  min-height: 100vh;
+  /* 整頁不捲動:版面鎖在視窗內,溢出由各欄自己的捲軸消化。 */
+  height: 100%;
+  overflow: hidden;
   /* CRT 掃描線 + 角落微 vignette */
   background-image:
     repeating-linear-gradient(
@@ -46,7 +48,8 @@ html, body {
 }
 
 #app {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   padding: 14px;
 }
 
@@ -56,8 +59,10 @@ html, body {
 .monitor {
   margin: 0 auto;
   width: 100%;
-  /* 滿版：上下填滿視窗，不再像一張浮在桌面的紙 */
-  min-height: calc(100vh - 28px);
+  /* 滿版：上下填滿視窗，不再像一張浮在桌面的紙。
+     高度鎖死(min 改 height),內容超出由欄內捲軸吸收,不再撐出整頁捲動。 */
+  height: calc(100vh - 28px);
+  height: calc(100dvh - 28px);
   display: flex;
   flex-direction: column;
   border: 1px solid var(--accent);
@@ -112,16 +117,42 @@ html, body {
 .scene-grid {
   display: grid;
   grid-template-columns: 1.1fr 1.5fr 1fr;
+  /* 單列高度鎖在容器內,欄內容再多也不許往外撐。 */
+  grid-template-rows: minmax(0, 1fr);
   gap: 1px;
   background: var(--border-soft);
-  /* 撐滿 .monitor 的 flex 剩餘高度，三欄才不會下半截空掉 */
+  /* 撐滿 .monitor 的 flex 剩餘高度，三欄才不會下半截空掉;
+     min-height:0 才允許它縮進 flex 配額,不會被內容頂破。 */
   flex: 1;
+  min-height: 0;
 }
 
 .col {
   padding: 22px 22px 28px 22px;
   background: var(--bg-2);
   position: relative;
+  min-height: 0;
+}
+
+/* 欄內捲動:整頁不動,守則/行動各捲各的。 */
+.col-rules,
+.col-actions {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+.col-rules::-webkit-scrollbar,
+.col-actions::-webkit-scrollbar { width: 6px; }
+.col-rules::-webkit-scrollbar-track,
+.col-actions::-webkit-scrollbar-track { background: transparent; }
+.col-rules::-webkit-scrollbar-thumb,
+.col-actions::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+/* 敘事欄本身不捲,捲的是裡面的 stream。 */
+.col-narrative {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .col-title {
@@ -200,9 +231,9 @@ li.amended::after {
   /* 右內距 > 捲軸寬，加上 scrollbar-gutter 預留溝槽，讓捲軸永遠不會壓到
      內容(尤其結局那個有邊框的框)。 */
   padding: 6px 14px 8px 0;
-  /* 高度封頂：超出就欄內捲動，不再把整欄往下撐。renderScene 每次會把
-     stream 捲到底，所以最新一段永遠在視野裡。 */
-  max-height: 60vh;
+  /* 高度交給 flex 配額:超出就欄內捲動,不再撐整頁。 */
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
   /* Firefox:細捲軸(否則是系統寬版，webkit 那組對它無效)。 */
@@ -495,7 +526,15 @@ li.amended::after {
   max-width: 760px;
   margin: 0 auto;
   padding: 48px 24px 32px 24px;
+  /* 整頁不捲動後,檔案室自己吸收溢出:滿版高度 + 室內捲動。 */
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
 }
+.archive-room::-webkit-scrollbar { width: 6px; }
+.archive-room::-webkit-scrollbar-track { background: transparent; }
+.archive-room::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
 .archive-head { text-align: center; margin-bottom: 44px; }
 .archive-plate {
   display: inline-block;
@@ -1041,17 +1080,22 @@ pre {
 
 /* ============== Mobile ============== */
 @media (max-width: 900px) {
-  .scene-grid { grid-template-columns: 1fr; }
+  /* 單欄堆疊 + 吸底行動欄靠整頁捲動運作,手機版恢復頁面捲動。 */
+  html, body { height: auto; overflow: visible; }
+  #app { height: auto; }
+  .monitor { height: auto; min-height: calc(100vh - 16px); }
+  .scene-grid { grid-template-columns: 1fr; grid-template-rows: none; }
   .col { padding: 18px 16px 22px 16px; }
+  .col-rules, .col-actions { overflow: visible; }
+  .archive-room { height: auto; overflow: visible; }
   /* 行動欄吸底：敘事再長也不用滑到底才點得到。 */
   .col-actions { border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 5; background: var(--bg); }
   .col-narrative { order: 2; }
   .col-rules { order: 1; }
   .col-actions { order: 3; }
   #app { padding: 8px; }
-  .monitor { min-height: calc(100vh - 16px); }
   /* 單欄堆疊時敘事欄矮一點，免得把行動欄推到一長串捲動之外。 */
-  .narrative-stream { max-height: 42vh; }
+  .narrative-stream { flex: none; max-height: 42vh; }
 }
 @media (max-width: 600px) {
   body { font-size: 15px; }
