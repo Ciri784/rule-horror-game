@@ -200,7 +200,13 @@ export function migrateState(scene, state) {
   if (!scene || !scene.initialState) return;
   const defaults = scene.initialState;
   for (const key of Object.keys(defaults)) {
-    if (!(key in state)) state[key] = defaults[key];
+    if (!(key in state)) {
+      const d = defaults[key];
+      // Deep-clone arrays/objects: a bare assignment would share the
+      // reference with scene.initialState, so pushing to a cloned
+      // state.doneEvents would mutate the scene singleton forever.
+      state[key] = (d && typeof d === "object") ? structuredClone(d) : d;
+    }
   }
 }
 

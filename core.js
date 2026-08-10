@@ -60,6 +60,7 @@ const UI_DEFAULTS = {
   home: "回到首頁",
   restart: "重新開始",
   emptyRules: "您目前還沒有拿到任何守則。",
+  timePassed: (t) => `（時間過去了。時鐘指向 ${t}。）`,
   visitLabel: (n) => `第 ${n} 次`,
 };
 function label(scene, key, ...args) {
@@ -197,7 +198,7 @@ export function renderScene(sceneId) {
     if (elapsedMs >= 5000) {
       const tickMinutes = Math.floor(elapsedMs / 5000);
       advanceClock(scene, state, tickMinutes);
-      narrate(state, `（時間過去了。房間的時鐘指向 ${formatTime(state.time)}。）`, "system");
+      narrate(state, label(scene, "timePassed", formatTime(state.time)), "system");
       state._lastTickAt = now;
       // A catch-up can cross midnight or reach dawn, so re-run derived state
       // and endings here too — otherwise a time-based ending (e.g. 天亮退房)

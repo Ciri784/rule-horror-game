@@ -6,7 +6,7 @@
 // 玩家拿到 4 本守則，沒有一本會告訴你「信我」或「別信我」；
 // 哪一條把你往 704 推，你得自己做。
 
-import { pickUp, moveTo, unlockRule, formatTime, narrate } from "../engine.js";
+import { pickUp, moveTo, unlockRule, formatTime, narrate, advanceClock } from "../engine.js";
 
 const CARD_NUMBER = "602";   // 房卡上的號碼
 const HIDDEN_NUMBER = "704"; // 房間自己翻出來的號碼
@@ -388,7 +388,7 @@ function actions(state, ctx) {
           return;
         }
 
-        s.time += 120;
+        advanceClock(c.scene, s, 120);
         if (n >= 3 && !s._cardOnPillow) s.drift += 1;
         else if (n >= 3) c.narrate("房卡就在枕頭旁邊。你睡得比平常安穩。");
 
