@@ -523,18 +523,14 @@ li.amended::after {
    玩家是來調閱卷宗的人。每個場所是一只牛皮紙卷宗夾：
    上方突出檔案編號耳、右下角蓋歸檔章，整夾微微歪斜上架。 */
 .archive-room {
-  max-width: 760px;
+  /* 加寬:兩側不再留兩大條空走廊。 */
+  max-width: 1080px;
   margin: 0 auto;
   padding: 48px 24px 32px 24px;
-  /* 整頁不捲動後,檔案室自己吸收溢出:滿版高度 + 室內捲動。 */
-  height: 100%;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent) transparent;
 }
-.archive-room::-webkit-scrollbar { width: 6px; }
-.archive-room::-webkit-scrollbar-track { background: transparent; }
-.archive-room::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+/* 檔案室走整頁捲動;只有場所(.monitor)鎖視窗。 */
+html.archive-mode, html.archive-mode body { height: auto; overflow: visible; }
+html.archive-mode #app { height: auto; }
 .archive-head { text-align: center; margin-bottom: 44px; }
 .archive-plate {
   display: inline-block;
@@ -568,6 +564,15 @@ li.amended::after {
   display: flex;
   flex-direction: column;
   gap: 26px;
+}
+/* 寬螢幕兩欄上架,填滿加寬後的檔案室。 */
+@media (min-width: 1200px) {
+  .archive-shelf {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 26px 32px;
+    align-items: start;
+  }
 }
 .folder {
   display: block;
@@ -1087,7 +1092,6 @@ pre {
   .scene-grid { grid-template-columns: 1fr; grid-template-rows: none; }
   .col { padding: 18px 16px 22px 16px; }
   .col-rules, .col-actions { overflow: visible; }
-  .archive-room { height: auto; overflow: visible; }
   /* 行動欄吸底：敘事再長也不用滑到底才點得到。 */
   .col-actions { border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 5; background: var(--bg); }
   .col-narrative { order: 2; }

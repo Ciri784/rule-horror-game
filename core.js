@@ -179,6 +179,8 @@ function renderRules(scene, state, openBooks) {
 }
 
 export function renderScene(sceneId) {
+  // 場所鎖視窗(欄內捲動),離開檔案室的整頁捲動模式。
+  document.documentElement.classList.remove("archive-mode");
   const scene = scenes[sceneId];
   if (!scene) {
     appRoot().innerHTML = "";
@@ -484,6 +486,8 @@ export function renderIndex() {
 
   stopTick();
   appRoot().innerHTML = "";
+  // 檔案室走整頁捲動,放開視窗鎖。
+  document.documentElement.classList.add("archive-mode");
   // 首頁是一間檔案室：每個場所是一份被歸檔的卷宗，玩家是來調閱的人。
   // 卷宗編號與歸檔章由 scene.archive 提供，沒給就用順序補一個編號。
   //
