@@ -27,7 +27,9 @@ html, body {
   color: var(--ink);
   font-family: "Courier New", "Cutive Mono", ui-monospace, "Special Elite",
                "Source Han Serif TC", "Noto Serif TC", "Songti TC", monospace, serif;
-  font-size: 15px;
+  font-size: 16px;
+  /* Courier New 筆畫偏細，全域加半級字重換可讀性 */
+  font-weight: 500;
   line-height: 1.7;
   min-height: 100vh;
   /* CRT 掃描線 + 角落微 vignette */
@@ -52,8 +54,12 @@ html, body {
    讀者在場所「裡面」，不是在監看場所——
    所以沒有 REC、頻道、訊號燈這類監視台語言。 */
 .monitor {
-  max-width: 1320px;
   margin: 0 auto;
+  width: 100%;
+  /* 滿版：上下填滿視窗，不再像一張浮在桌面的紙 */
+  min-height: calc(100vh - 28px);
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--accent);
   background: var(--bg-2);
   box-shadow:
@@ -108,6 +114,8 @@ html, body {
   grid-template-columns: 1.1fr 1.5fr 1fr;
   gap: 1px;
   background: var(--border-soft);
+  /* 撐滿 .monitor 的 flex 剩餘高度，三欄才不會下半截空掉 */
+  flex: 1;
 }
 
 .col {
@@ -143,7 +151,7 @@ ol.rules > li {
   text-indent: 0;
   border-bottom: 1px dashed var(--border);
   min-height: 28px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
   color: var(--ink);
 }
@@ -211,7 +219,7 @@ li.amended::after {
   grid-template-columns: 60px 1fr;
   gap: 10px;
   align-items: baseline;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.75;
   opacity: 0;
   animation: fade-in 0.5s ease-out forwards;
@@ -335,7 +343,7 @@ li.amended::after {
   border: 1px solid var(--border);
   padding: 12px 14px;
   font-family: "Courier New", ui-monospace, "Source Han Serif TC", "Noto Serif TC", monospace, serif;
-  font-size: 13px;
+  font-size: 14px;
   text-align: left;
   cursor: pointer;
   transition: all 0.12s ease-out;
@@ -714,16 +722,17 @@ pre {
   .col-rules { order: 1; }
   .col-actions { order: 3; }
   #app { padding: 8px; }
+  .monitor { min-height: calc(100vh - 16px); }
   /* 單欄堆疊時敘事欄矮一點，免得把行動欄推到一長串捲動之外。 */
   .narrative-stream { max-height: 42vh; }
 }
 @media (max-width: 600px) {
-  body { font-size: 14px; }
+  body { font-size: 15px; }
   .col { padding: 14px 12px; }
   .col-title { font-size: 9px; letter-spacing: 0.3em; }
-  .narr-row { grid-template-columns: 50px 1fr; gap: 8px; font-size: 13px; }
+  .narr-row { grid-template-columns: 50px 1fr; gap: 8px; font-size: 14px; }
   .narr-time { font-size: 10px; }
-  .action-btn { font-size: 12px; padding: 10px 12px; }
+  .action-btn { font-size: 13px; padding: 10px 12px; }
   .rulebook { font-size: 12px; }
   .rulebook-summary { padding: 10px 12px; }
   .scene-head { font-size: 9px; padding: 6px 10px; letter-spacing: 0.25em; }
