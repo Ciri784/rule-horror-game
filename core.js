@@ -475,9 +475,10 @@ export function renderIndex() {
   // 但檔案室本身也是一個場所。結案記錄累積後，這裡會慢慢不對勁：
   //   strange 1（結案 ≥1）：限閱註記多一行、第一只卷宗的耳位自己換邊。
   //   strange 2（結案 ≥2）：架上多出一只沒有登記的卷宗，點開只有一張房卡。
+//   strange 3（結案 ≥3）：牆上出現一份「管理員守則」——房間正式成為場所之一。
   const recs = archiveRecords();
   const totalFiled = Object.values(recs).reduce((n, r) => n + (r.filedCount || 0), 0);
-  const strange = totalFiled >= 2 ? 2 : totalFiled >= 1 ? 1 : 0;
+  const strange = totalFiled >= 3 ? 3 : totalFiled >= 2 ? 2 : totalFiled >= 1 ? 1 : 0;
 
   const head = [
     el("div", { class: "archive-plate" }, "第四十四號檔案室"),
@@ -490,8 +491,29 @@ export function renderIndex() {
   if (strange >= 2) {
     head.push(el("div", { class: "archive-whisper" }, "（架上的卷宗比昨天多了一份。）"));
   }
+  if (strange >= 3) {
+    head.push(el("div", { class: "archive-whisper" }, "（牆上昨天還沒有那份守則。）"));
+  }
   const room = el("div", { class: "archive-room" + (strange ? ` strange-${strange}` : "") },
     [el("header", { class: "archive-head" }, head)]);
+
+  // 管理員守則：貼在牆上的一張紙。每條都對應玩家實際碰過的異變，
+  // 但口吻始終是公事公辦的機構語言——落差本身就是恐怖。
+  if (strange >= 3) {
+    const KEEPER_RULES = [
+      "上架前請清點卷宗。數量與登記不符時，以架上數量為準。",
+      "卷宗耳位如有變動，屬正常歸檔作業，無需記錄。",
+      "本室不發放結案單。如您收到，請自行留存，勿上交。",
+      "調閱記錄由本室代填。請勿與本人記憶核對。",
+      "本室門牌為第四十四號。如您看見其他編號，請勿進入。",
+      "本室沒有管理員。",
+    ];
+    room.appendChild(el("div", { class: "keeper-rules" }, [
+      el("div", { class: "keeper-title" }, "管理員守則"),
+      el("ol", {}, KEEPER_RULES.map((r) => el("li", {}, r))),
+      el("div", { class: "keeper-red" }, "（守則是真的。）"),
+    ]));
+  }
 
   const shelf = el("div", { class: "archive-shelf" });
   let i = 0;
