@@ -712,6 +712,144 @@ pre {
 .theme-hotel .home-btn:hover { background: var(--ink-dim); color: var(--bg-2); }
 .theme-hotel .reset-btn:hover { background: var(--accent); color: var(--bg-2); }
 
+/* 手冊變質：drift 越高，紙越黃爛，邊緣滲出不知是誰寫的紅字批註。
+   用 var 覆寫直接加深整份文件的底色，水漬與批註用偽元素疊上去。 */
+.monitor.theme-hotel.drift-1 {
+  --bg: #cbbc96;
+  --bg-2: #e2d4b0;
+  --bg-3: #d6c8a4;
+}
+.monitor.theme-hotel.drift-2 {
+  --bg: #c2ae83;
+  --bg-2: #dac9a1;
+  --bg-3: #cdbd92;
+  --ink: #2e2416;
+}
+.monitor.theme-hotel.drift-1::before,
+.monitor.theme-hotel.drift-2::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.monitor.theme-hotel.drift-1::before {
+  background:
+    radial-gradient(ellipse 220px 130px at 12% 18%, rgba(90,60,20,0.14), transparent 70%),
+    radial-gradient(ellipse 180px 100px at 88% 80%, rgba(90,60,20,0.16), transparent 70%);
+}
+.monitor.theme-hotel.drift-2::before {
+  background:
+    radial-gradient(ellipse 260px 150px at 10% 15%, rgba(70,42,10,0.22), transparent 70%),
+    radial-gradient(ellipse 200px 120px at 90% 78%, rgba(70,42,10,0.24), transparent 70%),
+    radial-gradient(ellipse 420px 300px at 50% 115%, rgba(40,20,5,0.28), transparent 70%);
+}
+/* 紅字批註：字很急，寫的人顯然沒撐到退房。 */
+.monitor.theme-hotel.drift-2::after {
+  content: "「電梯沒有 4 樓。」\A「別數。」";
+  white-space: pre;
+  position: absolute;
+  left: 34px;
+  bottom: 130px;
+  transform: rotate(-6deg);
+  font-family: "Kaiti TC", "DFKai-SB", "TW-Kai", "BiauKai", cursive;
+  font-size: 19px;
+  line-height: 1.9;
+  color: rgba(158, 30, 20, 0.55);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ============== 場景主題：夜班櫃台 (theme-nightdesk) ==============
+   過亮的螢光燈大廳：慘白帶綠、亮得讓人不舒服，整個畫面帶著
+   幾乎察覺不到的亮度嗡鳴。時鐘是櫃台上的紅色 LED 數字鐘；
+   交班簿是藍色原子筆手寫，跟印好的櫃台守則質感分開。 */
+.monitor.theme-nightdesk {
+  --bg: #dbe3d6;
+  --bg-2: #e8eee2;
+  --bg-3: #d0d9c9;
+  --ink: #25312a;
+  --ink-dim: #4c5a50;
+  --ink-faint: #87948a;
+  --accent: #c62f22;
+  --accent-soft: #c9746a;
+  --amber: #8a6d1f;
+  --phosphor: #57705a;
+  --border: rgba(37,49,42,0.26);
+  --border-soft: rgba(37,49,42,0.12);
+
+  border-color: #aebba9;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.25),
+    0 0 46px rgba(210,230,205,0.22),
+    0 18px 50px rgba(0,0,0,0.5);
+  animation: fluor-hum 9s steps(1) infinite;
+}
+/* 日光燈嗡鳴：一秒內閃兩下，其他時間正常。 */
+@keyframes fluor-hum {
+  0%, 91%, 94%, 100% { filter: brightness(1); }
+  92% { filter: brightness(0.965); }
+  93% { filter: brightness(1.02); }
+}
+/* drift 本來就有自己的動畫，併發保留嗡鳴（同權重後寫的會整組蓋掉） */
+.monitor.theme-nightdesk.drift-1 { animation: monitor-flicker 8s infinite, fluor-hum 9s steps(1) infinite; }
+.monitor.theme-nightdesk.drift-2 { animation: monitor-glitch 6s infinite, fluor-hum 9s steps(1) infinite; }
+
+/* 天花板燈板感的抬頭 */
+.theme-nightdesk .scene-head {
+  background: linear-gradient(180deg, #f4f8ef, #dde5d6);
+  border-bottom: 1px solid var(--border);
+}
+.theme-nightdesk .scene-head .scene-name { color: var(--ink); }
+/* LED 數字鐘 */
+.theme-nightdesk .live-clock {
+  font-family: "Courier New", ui-monospace, monospace;
+  color: #ff4038;
+  background: #141a16;
+  padding: 2px 10px 3px 10px;
+  border-radius: 3px;
+  border: 1px solid #2c352e;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 7px rgba(255,64,56,0.65);
+  font-weight: bold;
+}
+
+.theme-nightdesk .col-title {
+  border-left-color: var(--accent);
+  background: transparent;
+  color: var(--ink-dim);
+}
+
+/* 交班簿：再生紙底 + 藍色原子筆手寫；櫃台守則維持印刷體 */
+.theme-nightdesk .rulebook { background: var(--bg-2); }
+.theme-nightdesk .rulebook[data-book="交班簿"] {
+  background: #f0ecdc;
+  border-style: dashed;
+}
+.theme-nightdesk .rulebook[data-book="交班簿"] .rulebook-summary,
+.theme-nightdesk .rulebook[data-book="交班簿"] .rule-body {
+  font-family: "Kaiti TC", "DFKai-SB", "TW-Kai", "BiauKai", cursive;
+  color: #2c3f8f;
+}
+.theme-nightdesk .rulebook[data-book="交班簿"] .rule-num { color: #6a76b8; }
+
+.theme-nightdesk .action-btn {
+  background: var(--bg-2);
+  border-color: var(--border);
+}
+.theme-nightdesk .action-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  text-shadow: none;
+}
+.theme-nightdesk .action-btn:active { background: var(--ink); color: var(--bg-2); }
+.theme-nightdesk .col-actions.urgent .action-btn { background: rgba(198,47,34,0.08); }
+
+.theme-nightdesk .home-btn:hover { background: var(--ink-dim); color: var(--bg-2); }
+.theme-nightdesk .reset-btn:hover { background: var(--accent); color: var(--bg-2); }
+
 /* ============== Mobile ============== */
 @media (max-width: 900px) {
   .scene-grid { grid-template-columns: 1fr; }

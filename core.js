@@ -114,6 +114,8 @@ function renderRules(scene, state, openBooks) {
       const lockedHint = rules.length === 0 ? "" : `（${rules.length} 條）`;
       const props = {
         class: "rulebook",
+        // 暴露書名給主題 CSS：例如夜班的「交班簿」要換手寫體
+        "data-book": bookName,
         ontoggle: (ev) => {
           if (ev.target.open) openBooks.add(bookName);
           else openBooks.delete(bookName);
