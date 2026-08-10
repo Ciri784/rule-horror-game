@@ -956,9 +956,10 @@ pre {
 .audio-toggle.t-nightdesk { color: #4d5c52; border-bottom-color: rgba(77, 92, 82, 0.5); }
 .audio-toggle.t-nightdesk:hover { color: #26312b; border-bottom-color: rgba(38, 49, 43, 0.75); }
 
-/* 管理員守則:貼在牆上的一張紙,膠帶固定,比卷宗更白更正式。 */
+/* 管理員守則:貼在牆面左側的一張紙——正中間太像版面元素,
+   歪一邊才像有人動手貼上去的。膠帶固定,比卷宗更白更正式。 */
 .keeper-rules {
-  margin: 26px auto 4px auto;
+  margin: 26px auto 4px 7%;
   max-width: 460px;
   padding: 18px 22px 16px 22px;
   background: #ece2c6;
