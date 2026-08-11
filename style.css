@@ -1191,31 +1191,57 @@ pre {
 .folder-original ol { margin: 2px 0 8px 0; padding-left: 20px; }
 
 /* ============== Mobile ============== */
+/* 手機版頁籤:桌面不用,三欄本來就並排看得見。 */
+.mobile-tabs { display: none; }
+
 @media (max-width: 900px) {
-  /* 單欄堆疊 + 吸底行動欄靠整頁捲動運作,手機版恢復頁面捲動。 */
-  html, body { height: auto; overflow: visible; }
-  #app { height: auto; }
+  /* 手機版:整頁捲動,三欄改成「此刻/守則」兩頁籤 + 吸底行動欄。
+     fixed 背景在手機上一路重繪,跟著內容滾反而順。 */
+  html, body { height: auto; overflow: visible; background-attachment: scroll; }
+  #app { height: auto; padding: 8px; }
   .monitor { height: auto; min-height: calc(100vh - 16px); }
   .scene-grid { grid-template-columns: 1fr; grid-template-rows: none; }
   .col { padding: 18px 16px 22px 16px; }
   .col-rules, .col-actions { overflow: visible; }
-  /* 行動欄吸底：敘事再長也不用滑到底才點得到。
-     但吸底 + 無限高 = 飯店這種行動多的場景整欄糊滿螢幕,
-     所以限高 40vh,多出來的欄內自己捲。 */
+
+  /* 頁籤列吸頂:敘事再長,守則永遠一指就到。 */
+  .mobile-tabs {
+    display: flex; gap: 4px;
+    position: sticky; top: 0; z-index: 6;
+    padding: 6px 8px 0 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-tab {
+    font-family: inherit; font-size: 12px; letter-spacing: 0.25em;
+    color: var(--ink-dim); background: transparent;
+    border: 1px solid transparent; border-bottom: none;
+    padding: 9px 16px 8px; cursor: pointer;
+  }
+  .mobile-tab.active { color: var(--ink); background: var(--bg-2); border-color: var(--border); }
+  .tab-badge {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); margin-left: 6px; vertical-align: 2px;
+    box-shadow: 0 0 6px var(--accent);
+  }
+  .scene-grid[data-mtab="now"] .col-rules { display: none; }
+  .scene-grid[data-mtab="rules"] .col-narrative { display: none; }
+
+  /* 敘事不再欄內捲,跟著整頁走——少一層巢狀捲動,手機才不會卡。 */
+  .narrative-stream { flex: none; max-height: none; overflow: visible; }
+
+  /* 行動欄吸底、限高:行動再多(飯店)也不會糊滿螢幕。 */
+  .col-narrative { order: 2; }
+  .col-rules { order: 1; }
   .col-actions {
+    order: 3;
     border-top: 1px solid var(--border);
     position: sticky; bottom: 0; z-index: 5; background: var(--bg);
-    max-height: 40vh;
+    max-height: 36vh;
     overflow-y: auto;
     overscroll-behavior: contain;
     box-shadow: 0 -10px 24px rgba(0,0,0,0.55);
   }
-  .col-narrative { order: 2; }
-  .col-rules { order: 1; }
-  .col-actions { order: 3; }
-  #app { padding: 8px; }
-  /* 單欄堆疊時敘事欄矮一點，免得把行動欄推到一長串捲動之外。 */
-  .narrative-stream { flex: none; max-height: 42vh; }
 }
 @media (max-width: 600px) {
   body { font-size: 15px; }

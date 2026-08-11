@@ -178,6 +178,11 @@ function renderRules(scene, state, openBooks) {
   return ol;
 }
 
+// 手機版頁籤狀態:此刻/守則。模組層級,rerender 重建 DOM 後仍記得。
+// seenRuleCounts 記每個場景玩家已看過幾條守則,新解鎖時守則頁籤冒紅點。
+let mobileTab = "now";
+const seenRuleCounts = {};
+
 export function renderScene(sceneId) {
   // 場所鎖視窗(欄內捲動),離開檔案室的整頁捲動模式。
   document.documentElement.classList.remove("archive-mode");
@@ -358,6 +363,37 @@ export function renderScene(sceneId) {
     // still detached, so getElementById returned null and the stream
     // stayed empty.
     const grid = el("div", { class: "scene-grid" }, [rulesCol, narrCol, actCol]);
+    grid.dataset.mtab = mobileTab;
+
+    // 手機版頁籤(桌面 CSS 隱藏):此刻 / 守則。守則有新解鎖時冒紅點。
+    const ruleCount = rulesFor(scene, state).length;
+    if (mobileTab === "rules") seenRuleCounts[sceneId] = ruleCount;
+    const hasNewRules = ruleCount > (seenRuleCounts[sceneId] ?? ruleCount);
+    let tabsEl = null;
+    const setTab = (id, btn) => {
+      mobileTab = id;
+      grid.dataset.mtab = id;
+      tabsEl.querySelectorAll(".mobile-tab").forEach((b) =>
+        b.classList.toggle("active", b === btn));
+      if (id === "rules") {
+        seenRuleCounts[sceneId] = ruleCount;
+        const badge = tabsEl.querySelector(".tab-badge");
+        if (badge) badge.remove();
+      }
+    };
+    const tabNow = el("button", {
+      type: "button", role: "tab",
+      class: "mobile-tab" + (mobileTab === "now" ? " active" : ""),
+      onclick: (ev) => { ev.preventDefault(); setTab("now", ev.currentTarget); },
+    }, label(scene, "nowTitle"));
+    const tabRulesKids = [label(scene, "rulesTitle")];
+    if (hasNewRules) tabRulesKids.push(el("span", { class: "tab-badge" }));
+    const tabRules = el("button", {
+      type: "button", role: "tab",
+      class: "mobile-tab" + (mobileTab === "rules" ? " active" : ""),
+      onclick: (ev) => { ev.preventDefault(); setTab("rules", ev.currentTarget); },
+    }, tabRulesKids);
+    tabsEl = el("div", { class: "mobile-tabs", role: "tablist" }, [tabNow, tabRules]);
     // Chrome is deliberately minimal: the reader is *inside* the place, not
     // watching it on a monitor — so no surveillance jargon (REC/CH-04/LED).
     // Just the place name and the room clock, quiet like a document header.
@@ -368,6 +404,7 @@ export function renderScene(sceneId) {
         el("span", { class: "scene-name" }, scene.title),
         el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
       ]),
+      tabsEl,
       grid,
     ]);
     appRoot().appendChild(monitor);
@@ -383,7 +420,15 @@ export function renderScene(sceneId) {
     // narrator can run immediately. Just scroll the stream to the
     // bottom of the newest entry here.
     const stream = document.getElementById("narrative-stream");
-    if (stream) stream.scrollTop = stream.scrollHeight;
+    if (stream) {
+      // 手機版敘事跟整頁捲,沒有欄內捲軸可推;把最新一則滑進視野就好。
+      const mobileNow = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+      if (mobileNow && stream.lastElementChild && stream.lastElementChild.scrollIntoView) {
+        stream.lastElementChild.scrollIntoView({ block: "nearest" });
+      } else {
+        stream.scrollTop = stream.scrollHeight;
+      }
+    }
   }
 
   // --- Live clock tick ---
