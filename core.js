@@ -400,11 +400,13 @@ export function renderScene(sceneId) {
     // Drift leaks into this frame and the text itself (see drift-* CSS).
     const themeCls = scene.theme ? ` theme-${scene.theme}` : "";
     const monitor = el("div", { class: "monitor" + themeCls + driftClass(state) }, [
-      el("div", { class: "scene-head" }, [
-        el("span", { class: "scene-name" }, scene.title),
-        el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
+      el("div", { class: "mobile-top" }, [
+        el("div", { class: "scene-head" }, [
+          el("span", { class: "scene-name" }, scene.title),
+          el("span", { class: "live-clock", id: "live-clock" }, formatTime(state.time)),
+        ]),
+        tabsEl,
       ]),
-      tabsEl,
       grid,
     ]);
     appRoot().appendChild(monitor);
