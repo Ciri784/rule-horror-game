@@ -125,6 +125,89 @@ const HOUR_EVENTS = [
   { h: 5, text: "走廊有人拖行李。停在你的門口，又走開了。" },
 ];
 
+// ── 重複查看的遞進文本 ──
+// 同一件事一直看，看到的會一層一層往不對勁走。每個動作各自計次。
+function bump(s, key) {
+  const counts = s._lookCounts || (s._lookCounts = {});
+  counts[key] = (counts[key] || 0) + 1;
+  return counts[key];
+}
+function pick(pool, n) {
+  return pool[Math.min(n, pool.length) - 1];
+}
+
+const LINES_ROOM_CALM = [
+  ["房間很普通。單人床、床頭櫃、電視、窗戶。進來時什麼樣，現在就什麼樣。"],
+  ["你又看了一遍。床、櫃子、電視、窗。東西沒有多，也沒有少。"],
+  ["房間很安靜。你開始記得每樣東西的位置。記得太清楚了。"],
+  ["還是那個房間。普通得讓你一直想再看一次，確認它還是普通。"],
+];
+const LINES_ROOM_WRONG = [
+  ["你環顧房間。大致上跟進來時一樣。",
+   "只是鏡子裡的你，好像比你慢了半拍才轉過頭。"],
+  ["床頭櫃的抽屜微開了一條縫。你記得進來時是關的。",
+   "電視的電源燈亮著紅點。你沒開過電視。"],
+  ["鏡子裡那間房的燈，跟你身後這間的顏色不太一樣。",
+   "枕頭的位置比你離開時低了一點。"],
+  ["你把房間又看了一遍。每樣東西都在原來的位置——只是「原來的位置」好像不是你記得的那個。"],
+];
+
+const LINES_WINDOW_602 = [
+  ["窗外是停車場，六樓往下看的高度。你記得進來時停車場滿的，現在一台車都沒有。"],
+  ["停車場還是空的。你數格子，數到一半忘了數到哪。格子好像比剛才多。"],
+  ["街燈亮著，但照不到什麼。燈桿一根一根站得很直，直得像在站崗。"],
+  ["你拉開窗簾再看了一次。停車場正中間多了一台車。你沒聽見它開進來的聲音。"],
+];
+const LINES_WINDOW_704 = [
+  ["窗外還是停車場，但太近了——這個高度不像六樓，也不像七樓。",
+   "你數樓層，數到一半，窗戶上的灰塵開始動。"],
+  ["你再看了一次。停車場比剛才又近了一點。或者你離它近了一點。"],
+  ["玻璃映出身後的房間。你把窗簾拉上，玻璃裡那扇窗簾沒有跟著動。"],
+  ["你往外看的角度不對。你往左站了一步，停車場沒有跟著移動。"],
+];
+
+const LINES_BED = [
+  ["單人床，白床單，枕頭放得很整齊。"],
+  ["床鋪得很平。太平了，像沒有人敢第一個躺上去。"],
+  ["你坐在床緣試了試。彈簧沒有聲音，安靜得像床不敢出聲。"],
+  ["白床單在這種光線下，顏色有點像別的東西。你決定不要想是什麼。"],
+];
+
+// 門牌是玩法的核心：兩個號碼各一套遞進，第一次翻成 704 一定要有感。
+// 偏移開始之後，每次看門牌都多疊一層不對勁（drift 洩底，不看次數看 drift）。
+function doorLines(s, n) {
+  if (s.doorNumber === CARD_NUMBER) {
+    const lines = [...pick([
+      [`門牌上寫著 ${s.doorNumber}。白底黑字，跟飯店其他房間一樣。`],
+      [`還是 ${s.doorNumber}。你用手指描了一遍數字的邊，漆有點剝落。`],
+      [`${s.doorNumber}。你站在走廊看太久了，對面房的門牌好像也在看你。`],
+      [`${s.doorNumber}。數字沒變。你開始懷疑自己在確認什麼。`],
+    ], n)];
+    if (s.drift >= 2) {
+      lines.push("你有一瞬間把門牌看成別的數字。眨了眨眼，602 又好好地待在那裡。");
+      lines.push("綠色小燈暗了半秒，才慢慢亮起來。");
+    } else if (s.drift >= 1) {
+      lines.push("門牌旁的綠色小燈閃了一下。你盯著它看，它又一直亮著，像什麼都沒發生。");
+    }
+    return lines;
+  }
+  return pick([
+    [`門牌上寫著 ${s.doorNumber}。白底黑字，跟飯店其他房間一樣。`,
+     "你站在那裡又看了一下。房卡和門牌是兩個號碼。"],
+    [`${s.doorNumber}。你記得房卡上不是這個數字。你也記得你沒有走錯房間。`],
+    [`${s.doorNumber}。綠色小燈亮得很穩，穩得像它一直在等你再看一次。`],
+    [`${s.doorNumber}。你伸手碰了碰門牌。是溫的。`],
+  ], n);
+}
+
+// 午夜後、門牌還是 602 才能瞇。前三次免費，之後每次醒來房間都陌生一點。
+const DOZE_LINES = [
+  ["你靠在床頭，跟自己說只是閉一下眼。"],
+  ["你又瞇了一會。夢很淺，像水面上浮著一層油。"],
+  ["這次你夢見房間裡有另一張床，床上的人背對你睡著。醒來時，房間裡只有一張床。"],
+  ["你不敢真的睡著。每次閉上眼，房間就暗一分。"],
+];
+
 function derive(s) {
   if (s.drift >= DRIFT_FLIP) s.doorNumber = HIDDEN_NUMBER;
   else if (s.doorNumber == null) s.doorNumber = CARD_NUMBER;
@@ -186,15 +269,8 @@ function actions(state, ctx) {
     }
     out.push({ id: "look-door", label: "看門牌",
       onChoose: (s, c) => {
-        c.narrate(`門牌上寫著 ${s.doorNumber}。白底黑字，跟飯店其他房間一樣。`);
-        if (s.doorNumber !== CARD_NUMBER) {
-          c.narrate("你站在那裡又看了一下。房卡和門牌是兩個號碼。");
-        } else if (s.drift === 1) {
-          c.narrate("門牌旁的綠色小燈閃了一下。你盯著它看，它又一直亮著，像什麼都沒發生。");
-        } else if (s.drift >= 2) {
-          c.narrate("你有一瞬間把門牌看成別的數字。眨了眨眼，602 又好好地待在那裡。");
-          c.narrate("綠色小燈暗了半秒，才慢慢亮起來。");
-        }
+        const n = bump(s, "look-door");
+        doorLines(s, n).forEach((t) => c.narrate(t));
         s.time += 2;
       } });
     if (has(state, "guest-card")) {
@@ -221,20 +297,9 @@ function actions(state, ctx) {
     }
     out.push({ id: "look-room", label: "看一下房間",
       onChoose: (s, c) => {
-        if (s.drift === 0) {
-          c.narrate("房間很普通。單人床、床頭櫃、電視、窗戶。進來時什麼樣，現在就什麼樣。");
-        } else if (s.drift === 1) {
-          c.narrate("你環顧房間。大致上跟進來時一樣。");
-          c.narrate("只是鏡子裡的你，好像比你慢了半拍才轉過頭。");
-          s._roomChanged = true;
-        } else {
-          c.narrate("你環顧房間。");
-          c.narrate("床頭櫃的抽屜微開了一條縫。你記得進來時是關的。");
-          c.narrate("電視的電源燈亮著紅點。你沒開過電視。");
-          c.narrate("鏡子裡那間房的燈，跟你身後這間的顏色不太一樣。");
-          c.narrate("枕頭的位置比你離開時低了一點。");
-          s._roomChanged = true;
-        }
+        const n = bump(s, "look-room");
+        if (s.drift >= 1) s._roomChanged = true;
+        pick(s.drift === 0 ? LINES_ROOM_CALM : LINES_ROOM_WRONG, n).forEach((t) => c.narrate(t));
         s.time += 2;
       } });
     if (state._roomChanged && !state._closedEyes) {
@@ -289,18 +354,14 @@ function actions(state, ctx) {
     }
     out.push({ id: "look-window", label: "看窗外",
       onChoose: (s, c) => {
-        if (s.doorNumber === CARD_NUMBER) {
-          c.narrate("窗外是停車場，六樓往下看的高度。你記得進來時停車場滿的，現在一台車都沒有。");
-        } else {
-          c.narrate("窗外還是停車場，但太近了——這個高度不像六樓，也不像七樓。");
-          c.narrate("你數樓層，數到一半，窗戶上的灰塵開始動。");
-        }
+        const n = bump(s, "look-window");
+        pick(s.doorNumber === CARD_NUMBER ? LINES_WINDOW_602 : LINES_WINDOW_704, n).forEach((t) => c.narrate(t));
         s.time += 3;
       } });
     out.push({ id: "look-bed", label: "看床",
       onChoose: (s, c) => {
-        if (s._seenLookBed) c.narrate("床還是那張床。你不想再檢查第二次。");
-        else { s._seenLookBed = true; c.narrate("單人床，白床單，枕頭放得很整齊。"); }
+        const n = bump(s, "look-bed");
+        pick(LINES_BED, n).forEach((t) => c.narrate(t));
         if (!has(s, "staff-card")) {
           c.narrate("枕頭中間有點凹，像有人壓過。");
         }
@@ -426,6 +487,21 @@ function actions(state, ctx) {
           }
         }
       } });
+    // 午夜後的「瞇一下」：門牌還認你的時候才能把時間睡過去。
+    // 前三次免費，第四次起每次 drift+1——硬睡會把門牌睡翻。
+    if (state.crossedMidnight && state.time < 370 && state.doorNumber === CARD_NUMBER) {
+      out.push({ id: "doze", label: "瞇一下",
+        onChoose: (s, c) => {
+          const n = bump(s, "doze");
+          advanceClock(c.scene, s, 30);
+          pick(DOZE_LINES, n).forEach((t) => c.narrate(t));
+          if (n >= 4) {
+            s.drift += 1;
+            c.narrate("醒來的時候，你花了一秒才想起自己住在幾號房。");
+          }
+          c.narrate(`時鐘指向 ${formatTime(s.time)}。`);
+        } });
+    }
     // 六點鈴響後（rg6）：收拾行李，趕在第二次鈴前去櫃台。
     if (state._heard && state._heard[360] && !state._packed && state.doorNumber === CARD_NUMBER) {
       out.push({ id: "pack-bag", label: "收拾行李",
