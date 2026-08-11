@@ -261,7 +261,7 @@ function actions(state, ctx) {
   const list = [];
 
   // 補貨:一次性任務。補到最後,筐裡多了一罐進貨單上沒有的。
-  if (!s.foundCan && !s.canResolved) {
+  if (!state.foundCan && !state.canResolved) {
     list.push({ id: "restock", label: "補飲料櫃的貨",
       onChoose: (s, c) => {
         s.foundCan = true;
@@ -269,7 +269,7 @@ function actions(state, ctx) {
         s.time += 15;
       } });
   }
-  if (s.foundCan && !s.canResolved) {
+  if (state.foundCan && !state.canResolved) {
     list.push({ id: "stock-can", label: "把那罐排上貨架",
       onChoose: (s, c) => {
         s.stockedUnknown = true;
@@ -286,7 +286,7 @@ function actions(state, ctx) {
   }
 
   // 報廢:守則說 04:00 之後才能丟。早丟也是一種處置。
-  if (!s.discarded && !s.discardedEarly) {
+  if (!state.discarded && !state.discardedEarly) {
     list.push({ id: "discard", label: "報廢過期品",
       onChoose: (s, c) => {
         if (s.time < DISCARD_OK) {
@@ -303,7 +303,7 @@ function actions(state, ctx) {
   list.push({ id: "inventory", label: "翻庫存本",
     onChoose: (s, c) => { c.narrate(inventoryText(s)); s.time += 2; } });
 
-  if (s.time >= 1600 && !s.readLastPage) {
+  if (state.time >= 1600 && !state.readLastPage) {
     list.push({ id: "last-page", label: "撕開庫存本最後一頁的膠帶",
       onChoose: (s, c) => {
         s.readLastPage = true;
