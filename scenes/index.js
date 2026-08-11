@@ -5,8 +5,10 @@
 
 import { hotel } from "./hotel.js";
 import { nightDesk } from "./night-desk.js";
+import { store } from "./store.js";
 
 export const scenes = [
   hotel,
   nightDesk,
+  store,
 ];
