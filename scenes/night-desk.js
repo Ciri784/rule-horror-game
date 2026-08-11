@@ -1,4 +1,4 @@
-// Rule Horror — 夜班櫃台（night-desk)
+// Rule Horror — 夜班櫃台（night-desk）
 //
 // 視角翻轉：你不是讀守則的房客，你是被守則約束的夜班櫃台。
 // 23:00 上班，06:00 交班。事件依時間窗自己找上門，每個處置的對錯
@@ -10,7 +10,7 @@
 import { narrate } from "../engine.js";
 
 const SHIFT_START = 23 * 60;   // 1380 = 23:00
-const SHIFT_END = 30 * 60;     // 1800 = 隔天 06:00(formatTime 會 %24 顯示 06:00)
+const SHIFT_END = 30 * 60;     // 1800 = 隔天 06:00（formatTime 會 %24 顯示 06:00）
 const CHOICE_MINUTES = 3;      // 每個處置花掉的遊戲時間
 
 // ── 守則與交班簿 ──
@@ -49,7 +49,7 @@ const RULEBOOKS = {
 };
 
 // ── 事件池 ──
-// 每個事件有時間窗 [start, end](分鐘）。進窗就強制找上玩家；
+// 每個事件有時間窗 [start， end]（分鐘）。進窗就強制找上玩家；
 // 超過時限沒處理，timeout 也是一種處置。
 const EVENTS = [
   {
@@ -339,8 +339,8 @@ export const nightDesk = {
   omens: [
     { id: "elevator-empty", at: 1555, lead: 45,
       cue: "ding",
-      foretell: "電梯響了一聲,門開了。裡面沒有人。",
-      happen: "電梯響了一聲,門開了。裡面沒有人。你低頭確認了一眼時間——和剛才那條記錄分秒不差。" },
+      foretell: "電梯響了一聲，門開了。裡面沒有人。",
+      happen: "電梯響了一聲，門開了。裡面沒有人。你低頭確認了一眼時間——和剛才那條記錄分秒不差。" },
   ],
   rules: RULES,
   rulebooks: RULEBOOKS,

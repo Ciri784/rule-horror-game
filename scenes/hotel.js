@@ -136,8 +136,8 @@ function derive(s) {
       const mins = ev.h * 60;
       if (s.time >= mins && !heard[mins]) {
         heard[mins] = true;
-        // 睡著或快轉錯過的整點不補播:你沒聽見就是沒聽見。
-        // 三點的偏移照樣發生——你看不看,房間都在動。
+        // 睡著或快轉錯過的整點不補播：你沒聽見就是沒聽見。
+        // 三點的偏移照樣發生——你看不看，房間都在動。
         if (s.time - mins <= 5) narrate(s, ev.text, "ambience");
         if (ev.drift && s.location === "my-room" && s.doorNumber === CARD_NUMBER) s.drift += 1;
       }
@@ -147,7 +147,7 @@ function derive(s) {
       heard[360] = true;
       narrate(s, s.time - 6 * 60 <= 5
         ? "早上六點。鈴聲響了。"
-        : "你看向時鐘——六點的鈴,已經響過了。", "ambience");
+        : "你看向時鐘——六點的鈴，已經響過了。", "ambience");
     }
     // 六點十分，第二次鈴
     if (s.time >= 6 * 60 + 10 && !heard[370]) {
@@ -741,8 +741,8 @@ export const hotel = {
   omens: [
     { id: "corridor-light", at: 2 * 60 + 20, lead: 45,
       cue: "flicker",
-      foretell: "走廊的燈暗了一秒,又亮起來。",
-      happen: "走廊的燈暗了一秒,又亮起來。你想起剛才那條時間不對的記錄。" },
+      foretell: "走廊的燈暗了一秒，又亮起來。",
+      happen: "走廊的燈暗了一秒，又亮起來。你想起剛才那條時間不對的記錄。" },
   ],
   rules: RULES,
   rulebooks: RULEBOOKS,

@@ -128,10 +128,10 @@ export function evaluateTriggers(scene, state) {
   evaluateOmens(scene, state);
 }
 
-// --- Omens (未來的敘事) ---
-// scene.omens: [{ id, at, lead, foretell, happen, when? }]。`at`/`lead` 用場景
+// --- Omens （未來的敘事） ---
+// scene.omens： [{ id， at， lead， foretell， happen， when？ }]。`at`/`lead` 用場景
 // 自己的時鐘分鐘數；cycle 場景請把兩者都訂在午夜後，直接比大小即可。
-// at 前 lead 分鐘起，敘事流會出現一條【時間戳是未來】的記錄 (kind "omen")；
+// at 前 lead 分鐘起，敘事流會出現一條【時間戳是未來】的記錄 （kind "omen"）；
 // 時鐘真正走到 at 時，被預言的事件發生。引擎永遠不標示哪條是預言——
 // 那個不對勁的時間戳是唯一的線索。
 function evaluateOmens(scene, state) {
@@ -217,7 +217,7 @@ export function moveTo(scene, state, locationId, label) {
 // Unlock a rule for the player. Silent by design: the newly-collected
 // rulebook already shows up in the rules panel, so dumping each rule's text
 // into the narrative stream is redundant noise. The signal that a rulebook
-// was gained is the item pickup ("你撿到了員工守則"), not a per-rule line.
+// was gained is the item pickup （"你撿到了員工守則"）， not a per-rule line.
 // A scene that wants to announce an unlock can narrate in its own action.
 export function unlockRule(ruleId, state) {
   if (state.unlockedRuleIds.includes(ruleId)) return false;

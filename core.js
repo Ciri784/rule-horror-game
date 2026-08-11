@@ -11,10 +11,10 @@
 //     endings: [{ id, label, when(state, ctx) -> bool, text }],
 //     ui?: { visitLabel?(n), restart?, rulesTitle?, nowTitle?, actionsTitle?,
 //            reset?, home?, emptyRules? },
-//     theme?: string,             // 場景視覺主題：外框加上 .theme-<name>，
+//     theme？： string，             // 場景視覺主題：外框加上 .theme-<name>，
 //                                 // 配色與質感由 style.css 的對應區塊接管
-//     archive?: { no?, stamp? },  // 首頁檔案室：檔案編號 / 歸檔章文字
-//     omens?: [{ id, at, lead, foretell, happen, when? }],  // 未來時間戳的預言敘事
+//     archive？： { no？， stamp？ }，  // 首頁檔案室：檔案編號 / 歸檔章文字
+//     omens？： [{ id， at， lead， foretell， happen， when？ }]，  // 未來時間戳的預言敘事
 //   }
 //   onChoose may call ctx.narrate(text, kind?) to push a narration entry.
 
@@ -61,7 +61,7 @@ export function getScene(id) { return scenes[id]; }
 export function listScenes() { return Object.values(scenes); }
 
 // Generic UI labels. A scene may override any of these via `scene.ui`;
-// place-specific wording (a hotel's 入住/退房) lives there, not here.
+// place-specific wording （a hotel's 入住/退房） lives there， not here.
 const UI_DEFAULTS = {
   rulesTitle: "已知規則",
   nowTitle: "此刻",
@@ -94,8 +94,8 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
-// 規則文字突變:事實不變,字變。rule.mutate = { from, to, when(state) },
-// 引擎永遠照原文判定,這裡只改顯示。被改掉的那幾個字渗紅色手寫體。
+// 規則文字突變：事實不變，字變。rule.mutate = { from， to， when（state） }，
+// 引擎永遠照原文判定，這裡只改顯示。被改掉的那幾個字渗紅色手寫體。
 function ruleBodyEl(rule, state) {
   const m = rule.mutate;
   if (m && typeof m.when === "function" && m.when(state) && rule.text.includes(m.from)) {
@@ -126,14 +126,14 @@ function renderRules(scene, state, openBooks) {
     for (const bookName of Object.keys(scene.rulebooks)) {
       groups[bookName] = list.filter((r) => r.book === bookName);
     }
-    // 沒有 book 欄位的 rule (legacy) 歸到 "其他"
+    // 沒有 book 欄位的 rule （legacy） 歸到 "其他"
     const orphans = list.filter((r) => !r.book);
     if (orphans.length) groups["其他"] = orphans;
 
     const wrap = el("div", { class: "rulebooks" });
     for (const [bookName, rules] of Object.entries(groups)) {
       if (!rules || rules.length === 0) continue;
-      // 計算這份守則單有幾條條件還沒過的 (顯示為「待解鎖」)
+      // 計算這份守則單有幾條條件還沒過的 （顯示為「待解鎖」）
       const lockedHint = rules.length === 0 ? "" : `（${rules.length} 條）`;
       const props = {
         class: "rulebook",
@@ -178,13 +178,13 @@ function renderRules(scene, state, openBooks) {
   return ol;
 }
 
-// 手機版頁籤狀態:此刻/守則。模組層級,rerender 重建 DOM 後仍記得。
-// seenRuleCounts 記每個場景玩家已看過幾條守則,新解鎖時守則頁籤冒紅點。
+// 手機版頁籤狀態：此刻/守則。模組層級，rerender 重建 DOM 後仍記得。
+// seenRuleCounts 記每個場景玩家已看過幾條守則，新解鎖時守則頁籤冒紅點。
 let mobileTab = "now";
 const seenRuleCounts = {};
 
 export function renderScene(sceneId) {
-  // 場所鎖視窗(欄內捲動),離開檔案室的整頁捲動模式。
+  // 場所鎖視窗（欄內捲動），離開檔案室的整頁捲動模式。
   document.documentElement.classList.remove("archive-mode");
   const scene = scenes[sceneId];
   if (!scene) {
@@ -236,7 +236,7 @@ export function renderScene(sceneId) {
       narrate(state, label(scene, "timePassed", formatTime(state.time)), "system");
       state._lastTickAt = now;
       // A catch-up can cross midnight or reach dawn, so re-run derived state
-      // and endings here too — otherwise a time-based ending (e.g. 天亮退房)
+      // and endings here too — otherwise a time-based ending （e.g. 天亮退房）
       // would wait for the next click, and overshooting its window would lose
       // it entirely.
       evaluateTriggers(scene, state);
@@ -245,8 +245,8 @@ export function renderScene(sceneId) {
     }
   }
 
-  // 預言音效:預言的事件「真的發生」的那一刻播放對應的 cue(電梯叮、
-  // 燈管閃爍)。載入存檔時已發生過的預言不重播——initial 掃描只標記不播音。
+  // 預言音效：預言的事件「真的發生」的那一刻播放對應的 cue（電梯叮、
+  // 燈管閃爍）。載入存檔時已發生過的預言不重播——initial 掃描只標記不播音。
   const playedOmenCues = new Set();
   function checkOmenCues(initial) {
     if (!Array.isArray(scene.omens) || !state._omens) return;
@@ -269,7 +269,7 @@ export function renderScene(sceneId) {
     }
     appRoot().innerHTML = "";
 
-    // 規則欄 (left on desktop, top on mobile)
+    // 規則欄 （left on desktop， top on mobile）
     const rulesCol = el("aside", { class: "col col-rules" });
     rulesCol.appendChild(el("h2", { class: "col-title" }, label(scene, "rulesTitle")));
     if (state.visitCount > 1) {
@@ -278,12 +278,12 @@ export function renderScene(sceneId) {
     }
     rulesCol.appendChild(renderRules(scene, state, openBooks));
 
-    // 敘事欄 (center)
+    // 敘事欄 （center）
     const narrCol = el("section", { class: "col col-narrative" });
     narrCol.appendChild(el("h2", { class: "col-title" }, label(scene, "nowTitle")));
     const streamEl = el("div", { class: "narrative-stream", id: "narrative-stream" });
     narrCol.appendChild(streamEl);
-    // 行動欄 (right on desktop, bottom on mobile)
+    // 行動欄 （right on desktop， bottom on mobile）
     // 場景自報限時狀態（例如夜班的事件上門）：行動欄換標題、換皮，
     // 讓玩家一眼知道「現在不回應，時間會替你回應」。
     const urgent = scene.isUrgent ? !!scene.isUrgent(state) : false;
@@ -365,7 +365,7 @@ export function renderScene(sceneId) {
     const grid = el("div", { class: "scene-grid" }, [rulesCol, narrCol, actCol]);
     grid.dataset.mtab = mobileTab;
 
-    // 手機版頁籤(桌面 CSS 隱藏):此刻 / 守則。守則有新解鎖時冒紅點。
+    // 手機版頁籤（桌面 CSS 隱藏）：此刻 / 守則。守則有新解鎖時冒紅點。
     const ruleCount = rulesFor(scene, state).length;
     if (mobileTab === "rules") seenRuleCounts[sceneId] = ruleCount;
     const hasNewRules = ruleCount > (seenRuleCounts[sceneId] ?? ruleCount);
@@ -410,7 +410,7 @@ export function renderScene(sceneId) {
       grid,
     ]);
     appRoot().appendChild(monitor);
-    // 聲音:場景主題決定聲層(首頁檔案室=null),drift 讓 drone 跟著變質。
+    // 聲音：場景主題決定聲層（首頁檔案室=null），drift 讓 drone 跟著變質。
     setSceneSound(scene.theme || null);
     setDriftLevel(driftLevel(state));
     audioButtonEl();
@@ -423,7 +423,7 @@ export function renderScene(sceneId) {
     // bottom of the newest entry here.
     const stream = document.getElementById("narrative-stream");
     if (stream) {
-      // 手機版敘事跟整頁捲,沒有欄內捲軸可推;把最新一則滑進視野就好。
+      // 手機版敘事跟整頁捲，沒有欄內捲軸可推；把最新一則滑進視野就好。
       const mobileNow = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
       if (mobileNow && stream.lastElementChild && stream.lastElementChild.scrollIntoView) {
         stream.lastElementChild.scrollIntoView({ block: "nearest" });
@@ -526,14 +526,14 @@ function receiptEl(scene, state, ending) {
 }
 
 export function renderIndex() {
-  // 檔案室的聲音:最輕的房間底噪,沒有主題聲層。
+  // 檔案室的聲音：最輕的房間底噪，沒有主題聲層。
   setSceneSound(null);
   setDriftLevel(0);
   audioButtonEl();
 
   stopTick();
   appRoot().innerHTML = "";
-  // 檔案室走整頁捲動,放開視窗鎖。
+  // 檔案室走整頁捲動，放開視窗鎖。
   document.documentElement.classList.add("archive-mode");
   // 首頁是一間檔案室：每個場所是一份被歸檔的卷宗，玩家是來調閱的人。
   // 卷宗編號與歸檔章由 scene.archive 提供，沒給就用順序補一個編號。
@@ -563,17 +563,17 @@ export function renderIndex() {
   const room = el("div", { class: "archive-room" + (strange ? ` strange-${strange}` : "") },
     [el("header", { class: "archive-head" }, head)]);
 
-  // 管理員守則：貼在卷宗後方牆上的一張紙——上緣被最後一排卷宗遮住,
-  // 要往下捲才看得到。不是新貼的海報,是一直都在、只是平常被擋住。
-  // 每條都對應玩家實際碰過的異變,但口吻始終是公事公辦的機構語言。
+  // 管理員守則：貼在卷宗後方牆上的一張紙——上緣被最後一排卷宗遮住，
+  // 要往下捲才看得到。不是新貼的海報，是一直都在、只是平常被擋住。
+  // 每條都對應玩家實際碰過的異變，但口吻始終是公事公辦的機構語言。
   let keeperRules = null;
   if (strange >= 3) {
     const KEEPER_RULES = [
-      "上架前請清點卷宗。數量與登記不符時,以架上數量為準。",
-      "卷宗耳位如有變動,屬正常歸檔作業,無需記錄。",
-      "本室不發放結案單。如您收到,請自行留存,勿上交。",
+      "上架前請清點卷宗。數量與登記不符時，以架上數量為準。",
+      "卷宗耳位如有變動，屬正常歸檔作業，無需記錄。",
+      "本室不發放結案單。如您收到，請自行留存，勿上交。",
       "調閱記錄由本室代填。請勿與本人記憶核對。",
-      "本室門牌為第四十四號。如您看見其他編號,請勿進入。",
+      "本室門牌為第四十四號。如您看見其他編號，請勿進入。",
       "本室沒有管理員。",
     ];
     keeperRules = el("div", { class: "keeper-rules" }, [
@@ -606,8 +606,8 @@ export function renderIndex() {
       }
       body.push(el("p", { class: "folder-record" }, parts.join(" · ")));
     }
-    // 歸檔原件:檔案室收著當初存檔的正確版本,只展示玩家實際收集過的條文。
-    // 場所裡的字會變,這裡的不會——要對答案,回檔案室。
+    // 歸檔原件：檔案室收著當初存檔的正確版本，只展示玩家實際收集過的條文。
+    // 場所裡的字會變，這裡的不會——要對答案，回檔案室。
     const saved = loadState(s.id);
     const unlockedIds = saved && Array.isArray(saved.unlockedRuleIds) ? saved.unlockedRuleIds : [];
     const byBook = [];
