@@ -9,7 +9,7 @@ const scene = {
   title: "預言房",
   blurb: "時鐘會先記下還沒發生的事。",
   openingNarrative: "你坐下來。",
-  initialTime: 100,
+  initialTime: 0, // 從 0 正向走;cycle 語意下時間倒退會被當跨午夜
   rules: {},
   actions: () => [],
   endings: [],
