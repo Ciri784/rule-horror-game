@@ -137,14 +137,22 @@ export function evaluateTriggers(scene, state) {
 function evaluateOmens(scene, state) {
   if (!Array.isArray(scene.omens) || state.ended) return;
   state._omens = state._omens || {};
+  // cycle 時鐘的 at 是「午後後的牆上時間」（如 02:20=140），但開場 23:00=1380
+  // 直接比大小會讓 1382 >= 140 成立、預言在開場就爆。cycle 場景換算成
+  // 「開場起算的有效分鐘」：跨午夜後 +1440；at 小於開場時間的也算到隔天。
+  const cycle = (scene.timeModel || "cycle") === "cycle";
+  const DAY = 24 * 60;
+  const initT = cycle && typeof scene.initialTime === "number" ? scene.initialTime : 0;
+  const nowEff = cycle ? state.time + (state.crossedMidnight ? DAY : 0) : state.time;
   for (const o of scene.omens) {
     const rec = state._omens[o.id] || (state._omens[o.id] = {});
     if (typeof o.when === "function" && !o.when(state)) continue;
-    if (!rec.foretold && state.time >= o.at - o.lead && state.time < o.at) {
+    const atEff = cycle && o.at < initT ? o.at + DAY : o.at;
+    if (!rec.foretold && nowEff >= atEff - o.lead && nowEff < atEff) {
       rec.foretold = true;
       narrate(state, o.foretell, "omen", o.at);
     }
-    if (!rec.happened && state.time >= o.at) {
+    if (!rec.happened && nowEff >= atEff) {
       rec.foretold = true;
       rec.happened = true;
       narrate(state, o.happen, "narration");
