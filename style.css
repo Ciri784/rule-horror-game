@@ -1199,8 +1199,17 @@ pre {
   .scene-grid { grid-template-columns: 1fr; grid-template-rows: none; }
   .col { padding: 18px 16px 22px 16px; }
   .col-rules, .col-actions { overflow: visible; }
-  /* 行動欄吸底：敘事再長也不用滑到底才點得到。 */
-  .col-actions { border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 5; background: var(--bg); }
+  /* 行動欄吸底：敘事再長也不用滑到底才點得到。
+     但吸底 + 無限高 = 飯店這種行動多的場景整欄糊滿螢幕,
+     所以限高 40vh,多出來的欄內自己捲。 */
+  .col-actions {
+    border-top: 1px solid var(--border);
+    position: sticky; bottom: 0; z-index: 5; background: var(--bg);
+    max-height: 40vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 -10px 24px rgba(0,0,0,0.55);
+  }
   .col-narrative { order: 2; }
   .col-rules { order: 1; }
   .col-actions { order: 3; }
