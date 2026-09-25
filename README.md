@@ -17,6 +17,12 @@ it usually rewrites the rulebook — including rewriting itself.
   door reading 602 until morning. Four rulebooks — guest, staff, night-shift,
   and the floor's own — each swear they protect you, and they contradict each
   other on purpose.
+- **夜班櫃台** — The hotel from behind the desk. Work from 23:00 to 06:00;
+  decide whether to trust the printed desk rules or the previous clerk's
+  handwriting when each guest, call, and camera feed asks for an answer.
+- **深夜便利商店** — A night shift where empty shelf space is never really
+  empty. Restock, dispose of expired goods, and survive until the time clock
+  says morning — not when the windows start to brighten.
 
 ## Run locally
 
