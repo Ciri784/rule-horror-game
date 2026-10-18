@@ -6,9 +6,11 @@
 import { hotel } from "./hotel.js";
 import { nightDesk } from "./night-desk.js";
 import { store } from "./store.js";
+import { lastBus } from "./last-bus.js";
 
 export const scenes = [
   hotel,
   nightDesk,
   store,
+  lastBus,
 ];

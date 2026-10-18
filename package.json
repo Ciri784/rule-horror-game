@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Ciri784/rule-horror-game#readme",
   "devDependencies": {
+    "jsdom": "^30.1.3",
     "vitest": "^4.1.10"
   }
 }

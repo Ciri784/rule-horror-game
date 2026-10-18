@@ -23,6 +23,8 @@ it usually rewrites the rulebook — including rewriting itself.
 - **深夜便利商店** — A night shift where empty shelf space is never really
   empty. Restock, dispose of expired goods, and survive until the time clock
   says morning — not when the windows start to brighten.
+- **末班公車** — A bus stop with no timetable. Every bus stops, but only one
+  is yours; learn what the temporary notice means before you get on.
 
 ## Run locally
 
