@@ -83,12 +83,12 @@ function choices(s) {
 const ENDINGS = [
   { id: "route-zero", label: "0 號車", when: (s) => s.boarded && (s.satWindow || s.gaveAddress || s.pulledBell), text: "車停了。車門外是中央車站，月台空得很完整。司機終於回頭，看著你說：『到站了。你上次也是在這裡下車。』你想問上次是什麼時候，卻發現手上拿著一張已經刷過的票。日期是明天。" },
   { id: "walk-loop", label: "沒有離開的路", when: (s) => s.left, text: "你沿著路燈走，走過便利商店、診所、那面塗了白漆的牆。第四盞路燈底下，你又看見候車亭。站牌上的公告被撕掉一半，只留下終點站三個字：中央車站。你決定再等一班。" },
-  { id: "real-last-bus", label: "末班車", when: (s) => s.firstBus === "refused" && s.time >= 1455, text: "一台普通的末班車靠站。車頭號碼你認得，司機也只是司機。他問你去哪裡，你看著公告，說出終點站的名字。車開走時，候車亭的玻璃反射出一個還在等車的人影——它沒有上來。" },
+  { id: "real-last-bus", label: "末班車", when: (s) => s.firstBus === "refused" && s.time >= 1485, text: "一台普通的末班車靠站。車頭號碼你認得，司機也只是司機。他問你去哪裡，你看著公告，說出終點站的名字。車開走時，候車亭的玻璃反射出一個還在等車的人影——它沒有上來。" },
 ];
 
 function derive(state) {
   if (state.ended || state.firstBus) return;
-  if (state.time >= 1425) {
+  if (state.time >= 1465) {
     state.firstBus = true;
     narrate(state, "一台公車滑進站。它沒有煞車的聲音，車頭電子板也沒有立刻亮起。司機停得很準，剛好停在你面前。", "omen");
   }
@@ -100,8 +100,9 @@ export const lastBus = {
   blurb: "凌晨的站牌沒有班表，但每一班車都會停。",
   theme: "bus",
   archive: { no: "RH-025", stamp: "夜間留置" },
-  openingNarrative: "00:17。你站在一個不熟的公車站。候車亭玻璃上有幾行被指甲刮出來的字，班表被人整張撕掉。\n\n路的另一頭，一對車燈正往這裡來。",
-  initialTime: 1417,
+  // 敘事流已由 UI 自動標記目前時間；不要在本文再手寫一份時間。
+  openingNarrative: "你站在一個不熟的公車站。候車亭玻璃上有幾行被指甲刮出來的字，班表被人整張撕掉。\n\n路的另一頭，一對車燈正往這裡來。",
+  initialTime: 1457, // 00:17
   initialUnlockedRuleIds: ["r1", "r2", "r3", "r4", "r5", "r6"],
   rules: RULES,
   rulebooks: RULEBOOKS,
