@@ -155,7 +155,10 @@ function evaluateOmens(scene, state) {
     if (!rec.happened && nowEff >= atEff) {
       rec.foretold = true;
       rec.happened = true;
-      narrate(state, o.happen, "narration");
+      // A long player action may cross the target minute. The consequence
+      // belongs on the timeline where it occurred, not where the next click
+      // happened.
+      narrate(state, o.happen, "narration", o.at);
     }
   }
 }
@@ -165,7 +168,9 @@ export function checkEndings(scene, state, ctx) {
     if (state.ended === e.id) return e;
     if (e.when(state, ctx)) {
       state.ended = e.id;
-      narrate(state, e.text, "ending");
+      const text = typeof e.text === "function" ? e.text(state, ctx) : e.text;
+      const atTime = typeof e.at === "function" ? e.at(state, ctx) : e.at;
+      narrate(state, text, "ending", atTime);
       return e;
     }
   }

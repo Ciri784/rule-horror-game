@@ -90,7 +90,7 @@ function derive(state) {
   if (state.ended || state.firstBus) return;
   if (state.time >= 1465) {
     state.firstBus = true;
-    narrate(state, "一台公車滑進站。它沒有煞車的聲音，車頭電子板也沒有立刻亮起。司機停得很準，剛好停在你面前。", "omen");
+    narrate(state, "一台公車滑進站。它沒有煞車的聲音，車頭電子板也沒有立刻亮起。司機停得很準，剛好停在你面前。", "omen", 1465);
   }
 }
 

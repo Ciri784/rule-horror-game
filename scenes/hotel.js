@@ -221,7 +221,7 @@ function derive(s) {
         heard[mins] = true;
         // 睡著或快轉錯過的整點不補播：你沒聽見就是沒聽見。
         // 三點的偏移照樣發生——你看不看，房間都在動。
-        if (s.time - mins <= 5) narrate(s, ev.text, "ambience");
+        if (s.time - mins <= 5) narrate(s, ev.text, "ambience", mins);
         if (ev.drift && s.location === "my-room" && s.doorNumber === CARD_NUMBER) s.drift += 1;
       }
     }
@@ -230,14 +230,14 @@ function derive(s) {
       heard[360] = true;
       narrate(s, s.time - 6 * 60 <= 5
         ? "早上六點。鈴聲響了。"
-        : "你看向時鐘——六點的鈴，已經響過了。", "ambience");
+        : "你看向時鐘——六點的鈴，已經響過了。", "ambience", 6 * 60);
     }
     // 六點十分，第二次鈴
     if (s.time >= 6 * 60 + 10 && !heard[370]) {
       heard[370] = true;
       narrate(s, s.time - (6 * 60 + 10) <= 5
         ? "鈴響第二次。走廊安靜下來。"
-        : "第二次鈴也響過了。走廊一直很安靜。", "ambience");
+        : "第二次鈴也響過了。走廊一直很安靜。", "ambience", 6 * 60 + 10);
     }
   }
 }

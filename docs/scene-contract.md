@@ -91,11 +91,17 @@
 // ending:
 { id: "checked-out", label: "天亮退房",
   when: (s) => s.crossedMidnight && s.time >= 6*60 && …,
+  at: 6*60,
   text: "結局散文,會推進敘事流。" }
 ```
 
 `ctx` 提供 `narrate(text, kind?)`、`scene`、`visitCount`。引擎工具(從
 `engine.js` import,在動作裡呼叫):`pickUp`、`moveTo`、`unlockRule`。
+
+排程事件若跨過時間窗才被處理，直接呼叫 `narrate(state, text, kind,
+atTime)`，把敘事列標在事件實際發生的分鐘數；不要讓文中的「03:00」
+掛在 03:07。結局可給 `at: 分鐘數`（或函式），讓「06:00 交班」固定標在
+06:00。
 
 `state.time` 用分鐘;跨午夜時 `state.crossedMidnight` 自動 latch。`core.js`
 也會依真實時間閒置推進 `state.time`(5 秒 = 1 分)。

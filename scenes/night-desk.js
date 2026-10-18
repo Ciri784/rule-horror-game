@@ -220,7 +220,7 @@ function derive(state) {
   for (const a of AMBIENCE) {
     if (state.time >= a.t && !ambHeard[a.t]) {
       ambHeard[a.t] = true;
-      if (state.time - a.t <= 10) narrate(state, a.text);
+      if (state.time - a.t <= 10) narrate(state, a.text, undefined, a.t);
     }
   }
 
@@ -237,7 +237,7 @@ function derive(state) {
         } else {
           state.activeEvent = p.id;
           state.activeUntil = p.until;
-          narrate(state, def.prompt);
+          narrate(state, def.prompt, undefined, p.at);
         }
       }
       return;
@@ -251,7 +251,7 @@ function derive(state) {
       } else {
         state.activeEvent = ev.id;
         state.activeUntil = ev.window[1];
-        narrate(state, ev.prompt);
+        narrate(state, ev.prompt, undefined, ev.window[0]);
       }
     }
     return;
@@ -320,9 +320,11 @@ const ENDINGS = [
     text: "你不記得你走到了哪。你記得最後一件事，是那串鑰匙離開你手心的重量。隔天，交班簿上多了一行字，字跡是你的：「提早來接班的那個，笑起來很標準。」第一晚，提前結束了。" },
   { id: "shift-end-dark", label: "交班（有什麼跟著你）",
     when: (s) => s.time >= SHIFT_END && (s.openedDoor || s.watchedTooLong || s.phoneMarked || s.drunkAdmitted),
+    at: SHIFT_END,
     text: "06:00。天亮了，但大廳好像比昨天暗了一點。你把鑰匙放進抽屜，發現抽屜裡已經有一串鑰匙。交班簿翻開著，最新一行字跡是你的：「他今晚還會來。」你不記得你寫過。第一晚，算是交班了。" },
   { id: "shift-end", label: "交班",
     when: (s) => s.time >= SHIFT_END,
+    at: SHIFT_END,
     text: "06:00。大門外的天是灰的，是早上那種灰。真正的早班推門進來，打哈欠，打卡。你把鑰匙放進抽屜，交班簿翻到今天那頁。你提筆，想寫點什麼給下一個夜班——最後只寫了：「守則在抽屜裡。你自己判斷。」第一晚，交班。" },
 ];
 

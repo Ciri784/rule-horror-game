@@ -221,7 +221,7 @@ function derive(state) {
   for (const a of AMBIENCE) {
     if (state.time >= a.t && !ambHeard[a.t]) {
       ambHeard[a.t] = true;
-      if (state.time - a.t <= 10) narrate(state, a.text, a.kind);
+      if (state.time - a.t <= 10) narrate(state, a.text, a.kind, a.t);
     }
   }
 
@@ -234,7 +234,7 @@ function derive(state) {
       } else {
         state.activeEvent = ev.id;
         state.activeUntil = ev.window[1];
-        narrate(state, ev.prompt);
+        narrate(state, ev.prompt, undefined, ev.window[0]);
       }
     }
     return;
@@ -390,9 +390,11 @@ const ENDINGS = [
     text: "你又巡了一次店。每一排都是滿的，每一格都沒有空位——包括那條不存在的走道盡頭，那扇門後面：貨架整齊地排著，最裡面那格，放著一件制服背心，疊得很平整，尺碼是你的。架上不能留空位。這家店，補齊了。" },
   { id: "shift-end-dark", label: "下班（打卡機猶豫了一下）",
     when: (s) => s.time >= SHIFT_END && (s.sawOutside || s.soldOden || s.gaveChange || s.askedYesterday || s.readLastPage || s.discardedEarly || s.stockedUnknown),
+    at: SHIFT_END,
     text: "07:00。你打卡——打卡機猶豫了一下才印字，像不太確定你還能不能打這張卡。早班推門進來，繞過你，站到收銀台後面，動作熟練得像已經站了很久。你走出自動門回頭看：店裡很亮，亮得每個貨架都沒有影子。收銀機底下那張便簽，最下面多了一行，字跡是你的。你不記得你寫過。這一班，算是下了。" },
   { id: "shift-end", label: "下班",
     when: (s) => s.time >= SHIFT_END,
+    at: SHIFT_END,
     text: "07:00。打卡機印字的聲音很乾脆。早班推門進來，打哈欠，說今天外面好冷。你交班，走出自動門，天是亮的，是早上那種亮。你想了想，在便簽最下面補了一行，留給下一個大夜：「守則是真的。便簽也是。你自己判斷。」這一班，下班。" },
 ];
 
