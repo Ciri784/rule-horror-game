@@ -805,7 +805,8 @@ export const hotel = {
   theme: "hotel",
   archive: { no: "RH-704", stamp: "限閱" },
   intro: "夜班。",
-  openingNarrative: "夜裡十一點，你走進 602 號房，行李放上床。\n電梯面板上沒有 4 樓，你沒多想。\n櫃台遞房卡時順手塞了一張紙條：房客守則，入住前請過目。撐到早上六點。",
+  // 敘事列本身已印出 initialTime；本文不再維護第二份時鐘。
+  openingNarrative: "你走進 602 號房，行李放上床。\n電梯面板上沒有 4 樓，你沒多想。\n櫃台遞房卡時順手塞了一張紙條：房客守則，入住前請過目。撐到早上。",
   initialItems: ["guest-card"],
   initialUnlockedRuleIds: ["rg1", "rg2", "rg3", "rg4", "rg5", "rg6"],
   initialIdentity: "guest",

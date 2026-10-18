@@ -22,7 +22,7 @@
 | `id` | string | 唯一 id,也是路由 hash(`#hotel`)。 |
 | `title` | string | 首頁卡片大標。 |
 | `blurb` | string | 首頁卡片小標(一句氛圍)。 |
-| `openingNarrative` | string | 敘事流的第一段。`\n` 可換行。 |
+| `openingNarrative` | string | 敘事流的第一段。`\n` 可換行。時間由引擎依 `initialTime` 自動顯示，本文不可手寫第二份開場時間。 |
 | `actions(state, ctx)` | fn | 回傳當下可選的動作陣列(見下)。 |
 | `endings` | array | 結局陣列,依序判定,第一個 `when` 為真者勝出(見下)。 |
 
