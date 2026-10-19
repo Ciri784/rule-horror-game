@@ -304,7 +304,7 @@ export function renderScene(sceneId) {
             saveState(sceneId, state);
             rerender();
           },
-        }, "開始第二晚"));
+        }, scene.continueLabel ? scene.continueLabel(state) : "繼續"));
       } else {
         endChildren.push(receiptEl(scene, state, ending));
         endChildren.push(el("a", { href: "#", onclick: (ev) => { ev.preventDefault(); restart(); } },

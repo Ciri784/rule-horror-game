@@ -172,4 +172,29 @@ describe("夜班櫃台 night-desk", () => {
     expect(state.readGuestName).toBe(true);
     expect(state.narrative.some((n) => n.text.includes("自己的名字"))).toBe(true);
   });
+
+  it("第二晚交班後進第三晚，會遇到要入住的自己", () => {
+    const { state, ctx } = newRun();
+    state.ended = "shift-end";
+    nightDesk.advanceNight(state);
+    state.ended = "shift-end";
+    expect(nightDesk.canContinue(state)).toBe(true);
+    nightDesk.advanceNight(state);
+    expect(state.night).toBe(3);
+    state.time = 1460;
+    tick(state);
+    expect(state.activeEvent).toBe("n3-checkin");
+    act(state, ctx, "n3-checkin:give-key");
+    expect(state.gaveSelfKey).toBe(true);
+  });
+
+  it("第三晚在六點是最終結案，不再提供下一晚", () => {
+    const { state, ctx } = newRun();
+    state.night = 3;
+    state.time = 30 * 60;
+    state.gaveSelfKey = true;
+    const end = act(state, ctx, "idle");
+    expect(end && end.id).toBe("became-entry");
+    expect(nightDesk.canContinue(state)).toBe(false);
+  });
 });
