@@ -263,6 +263,14 @@ export function applyAction(scene, state, actionId, ctx) {
   if (!a) throw new Error(`unknown action: ${actionId}`);
   if (state.ended) return scene.endings.find((e) => e.id === state.ended) || null;
   a.onChoose(state, ctx);
+  // Most scene actions express their small time cost as `s.time += n`.
+  // Keep that convenient scene API, but make it obey the cycle clock just
+  // like idle ticks do. Without this, a click-heavy hotel run could pass
+  // 24:00 as 1441, never latch midnight, and miss all dawn predicates.
+  if ((scene.timeModel || "cycle") === "cycle" && state.time >= 24 * 60) {
+    state.time %= 24 * 60;
+    state.crossedMidnight = true;
+  }
   evaluateTriggers(scene, state, ctx);
   return checkEndings(scene, state, ctx);
 }
