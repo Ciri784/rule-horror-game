@@ -1,116 +1,152 @@
 // Rule Horror — 末班公車
 //
-// 凌晨的站牌沒有班表。你只需要搭對那一班；問題是每一班都停。
+// 車站沒有班表。最危險的不是搭錯車，而是讓班表知道你在等哪一班。
 
 import { narrate } from "../engine.js";
 
+const START = 23 * 60 + 37;
+const END = 24 * 60 + 48;
+const DAY = 24 * 60;
+
 const RULES = {
-  r1: { subject: "站牌", book: "臨時行車公告", text: "末班車只停一次。車門開了，先看車頭號碼，再上車。" },
-  r2: { subject: "站牌", book: "臨時行車公告", text: "本路線沒有 0 號車。看見 0，請退到黃線後面。" },
-  r3: { subject: "站牌", book: "臨時行車公告", text: "司機若問你要去哪裡，只說站牌上寫的終點站。不要說住址。" },
-  r4: { subject: "站牌", book: "臨時行車公告", text: "上車後坐在最後一排以外。不要坐空著的雙人座靠窗位置。" },
-  r5: { subject: "塗改字", book: "候車亭玻璃", text: "「班表被撕掉不是因為停駛。是因為有人把『到站』當成了『回家』。」" },
-  r6: { subject: "塗改字", book: "候車亭玻璃", text: "「真正的末班車，車內廣播不會報下一站。它會叫你的名字。」" },
+  b1: { book: "候車亭公告", text: "末班車到站前，請站在黃線後。車門開了，先看車頭的路線牌，再決定要不要上車。" },
+  b2: { book: "候車亭公告", text: "路線牌上沒有站名時，不要問司機。等下一班。" },
+  b3: { book: "候車亭公告", text: "有人在車上叫出你的名字，不代表他認得你。不要回頭找聲音。" },
+  b4: { book: "候車亭公告", text: "今晚只有一班車會停在這裡。它的車頭是 17。" },
+  n1: { book: "座椅下的便條", text: "「17 不是路線，是座位數。看到 17 就跑。」" },
+  n2: { book: "座椅下的便條", text: "「班表被撕掉不是有人惡作劇。不要把碎紙拼回去。」" },
+  n3: { book: "座椅下的便條", text: "「上車前數車內的人。少一個才是對的。」" },
 };
 
-const RULEBOOKS = { "臨時行車公告": {}, "候車亭玻璃": {} };
+const RULEBOOKS = { "候車亭公告": {}, "座椅下的便條": {} };
 
-function choices(s) {
-  if (!s.firstBus) return [
-    { id: "read-sign", label: "讀臨時行車公告", onChoose: (state, ctx) => {
-      state.readSign = true;
-      ctx.narrate("公告貼得很新，膠帶卻泛黃。最下面印著終點站：『中央車站』。你不記得這附近有中央車站。");
-      state.time += 3;
-    } },
-    { id: "wait", label: "留在黃線後等車", onChoose: (state, ctx) => {
-      state.time += 8;
-      ctx.narrate("路燈嗡了一聲。遠處有車燈，靠近後又轉進你沒見過的巷子。站牌上的時間沒有變。");
-    } },
-    { id: "step-forward", label: "站到黃線前", onChoose: (state, ctx) => {
-      state.crossedLine = true;
-      state.time += 2;
-      ctx.narrate("柏油路比人行道低一點。你踩下去，發現路面是溫的，像剛有車開過——但街上很空。");
-    } },
-  ];
-  if (s.firstBus === true && !s.boarded && !s.left) return [
-    { id: "inspect-number", label: "看車頭號碼", onChoose: (state, ctx) => {
-      state.checkedNumber = true;
-      ctx.narrate("車頭電子板閃了三下：0、0、0。司機隔著擋風玻璃看你，沒有催。你忽然知道這班車會一直等到你做決定。\n\n它不是末班車。它只是知道你在等。 ");
-      state.time += 1;
-    } },
-    { id: "board-zero", label: "上 0 號車", onChoose: (state, ctx) => {
-      state.boarded = true;
-      state.wrongBus = true;
-      ctx.narrate("你踏上車。車門在你身後關得很輕。車內沒有乘客，最後一排那個靠窗雙人座空著，座墊上壓著一張你的悠遊卡。司機開車了。", "omen");
-      state.time += 4;
-    } },
-    { id: "let-pass", label: "退回黃線後，讓它開走", onChoose: (state, ctx) => {
-      state.firstBus = "refused";
-      state.time += 5;
-      ctx.narrate("你退後一步。0 號車關門，沒有發動，卻慢慢往前滑。轉過街角前，車內的燈一盞一盞熄掉。最後那扇窗裡，好像坐著一個剛剛才上車的人。 ");
-    } },
-  ];
-  if (s.boarded) return [
-    { id: "sit-window", label: "坐到最後一排靠窗的空位", onChoose: (state, ctx) => {
-      state.satWindow = true;
-      state.time += 2;
-      ctx.narrate("你坐下。座墊很暖，像有人剛起身。窗外倒退的不是街景，是你剛才站的候車亭；它一直在窗外，退不遠，也靠不近。 ");
-    } },
-    { id: "ask-stop", label: "問司機這班車到哪裡", onChoose: (state, ctx) => {
-      state.gaveAddress = true;
-      state.time += 2;
-      ctx.narrate("司機沒有回頭。廣播喀了一聲，用很禮貌的聲音唸出你的住址。你沒有告訴過他。 ");
-    } },
-    { id: "pull-bell", label: "按下車鈴", onChoose: (state, ctx) => {
-      state.pulledBell = true;
-      state.time += 3;
-      ctx.narrate("鈴沒有響。車內廣播先響了：『下一站，中央車站。』接著停了一拍，補了一句：『請勿下車。』");
-    } },
-  ];
+function effectiveTime(s) { return s.time + (s.crossedMidnight ? DAY : 0); }
+function advance(s, minutes) {
+  s.time += minutes;
+  if (s.time >= DAY) { s.time %= DAY; s.crossedMidnight = true; }
+}
+
+const EVENTS = [
+  {
+    id: "bus-blank",
+    at: 23 * 60 + 48,
+    prompt: "遠處有車燈靠近。車停得很準，車門開了。路線牌是黑的，連終點站都沒有。司機隔著擋風玻璃看著你，沒有催。",
+    choices: [
+      { id: "wait", label: "留在黃線後，等下一班", resolve: (s, c) => c.narrate("你沒有動。車門等了十秒，自己關上。車開走時，車內所有乘客同時轉頭看你。你沒有數。") },
+      { id: "ask", label: "問司機這班到哪", resolve: (s, c) => { s.askedDriver = true; c.narrate("你問出口，司機抬起一根手指，指向候車亭的玻璃。玻璃上倒映著車內——每一個座位都坐著你。車門還開著。") } },
+    ],
+    timeout: (s) => narrate(s, "車門關上。你忽然確定剛才那班車沒有輪胎，只有車燈在地上慢慢退遠。"),
+  },
+  {
+    id: "paper",
+    at: DAY + 3,
+    prompt: "風從路口吹過來，把被撕掉的班表碎片推到你腳邊。碎紙剛好拼得出一行：00:17。背面還有你的名字。",
+    choices: [
+      { id: "leave", label: "把碎紙踩回陰影裡", resolve: (s, c) => c.narrate("你沒有撿。風停了，碎紙卻還在往陰影裡滑，像終於知道該回哪裡。") },
+      { id: "piece", label: "把碎紙拼起來", resolve: (s, c) => { s.piecedTimetable = true; c.narrate("你拼出完整的時間：00:17。下一行是『上車者：』，後面空著。筆在你口袋裡動了一下，像有人從裡面握住它。") } },
+    ],
+    timeout: (s) => narrate(s, "碎紙被風翻了一面。你看到背後不是你的名字，是你的筆跡。你決定不要研究差別。"),
+  },
+  {
+    id: "bus-17",
+    at: DAY + 17,
+    prompt: "00:17。真正有聲音的公車從路口轉過來，煞車、打方向燈、車門氣壓洩掉——每一樣都很正常。路線牌亮著：17。車裡坐著十六個人，全都低著頭。司機沒有看你。",
+    choices: [
+      { id: "board", label: "上車", resolve: (s, c) => { s.boarded = true; c.narrate("你踏上第一階。車內的第十七張座位是空的，正對著你。所有人仍然低著頭。投幣箱亮起來，顯示的不是金額，是你的名字。") } },
+      { id: "count", label: "站在黃線後數人", resolve: (s, c) => { s.countedRiders = true; c.narrate("你數到十六。再數一次，還是十六。最後一排有個人抬起頭，嘴型像在說：少一個。你沒有上車。") } },
+      { id: "run", label: "離開候車亭", resolve: (s, c) => { s.leftStop = true; c.narrate("你往反方向走，走了很久才發現自己一直沿著同一塊破掉的人行道繞圈。回到候車亭時，17 還停在原地，車門還開著。") } },
+    ],
+    timeout: (s) => narrate(s, "你沒動。17 號車等了一分鐘，車門關上，開走。最後一排那個人一直看著你，直到車燈轉過街角。"),
+  },
+];
+
+function findEvent(id) { return EVENTS.find((e) => e.id === id); }
+
+function derive(s) {
+  if (s.ended) return;
+  const now = effectiveTime(s);
+  if (!s.activeEvent) {
+    // 一次跨過多個窗口時，過期事件直接套 timeout，直到找到仍可處置的那件。
+    // 不然從背景切回頁面會讓昨天的公車一班一班補播，時鐘又要造反。
+    while (true) {
+      const event = EVENTS.find((e) => !s.doneEvents.includes(e.id) && now >= e.at);
+      if (!event) break;
+      if (now >= event.at + 24) {
+        s.doneEvents.push(event.id);
+        event.timeout(s);
+      } else {
+        s.activeEvent = event.id;
+        s.activeUntil = event.at + 24;
+        narrate(s, event.prompt);
+        break;
+      }
+    }
+    return;
+  }
+  if (now >= s.activeUntil) {
+    const event = findEvent(s.activeEvent);
+    s.doneEvents.push(s.activeEvent);
+    s.activeEvent = null;
+    s.activeUntil = null;
+    if (event) event.timeout(s);
+  }
+}
+
+function actions(s, ctx) {
+  if (s.ended) return [];
+  if (s.activeEvent) {
+    const event = findEvent(s.activeEvent);
+    return event.choices.map((choice) => ({
+      id: `${event.id}:${choice.id}`,
+      label: choice.label,
+      onChoose: (state, c) => {
+        choice.resolve(state, c);
+        state.doneEvents.push(event.id);
+        state.activeEvent = null;
+        state.activeUntil = null;
+        advance(state, 3);
+      },
+    }));
+  }
   return [
-    { id: "wait-real", label: "繼續等真正的末班車", onChoose: (state, ctx) => {
-      state.time += 10;
-      ctx.narrate("站牌背面的廣告紙捲起一角。底下不是舊海報，是另一張公告：『末班車延誤。請勿離開候車亭。』你不知道它是什麼時候貼上的。 ");
-    } },
-    { id: "walk-home", label: "沿著路燈走回家", onChoose: (state, ctx) => {
-      state.left = true;
-      state.time += 5;
-      ctx.narrate("你走了兩個街口，回頭看。候車亭還在同一個位置，離你一樣遠。0 號車停在那裡，車門開著。 ");
-    } },
+    { id: "wait", label: "留在候車亭等", onChoose: (state, c) => { c.narrate("候車亭的燈閃了一下，又亮回來。路上沒有車，沒有風，遠處的紅綠燈還在按自己的節奏換色。", "narration"); advance(state, 5); } },
+    { id: "notice", label: "看候車亭玻璃", onChoose: (state, c) => { c.narrate(sawGlass(state)); advance(state, 2); } },
+    ...(!s.foundNote ? [{ id: "note", label: "撿起座椅下的便條", onChoose: (state, c) => { state.foundNote = true; state.unlockedRuleIds.push("n1", "n2", "n3"); c.narrate("你從座椅下抽出一張摺過很多次的便條。紙很薄，像被人反覆攤開又摺回去。上面寫著三條不太像公告的話。", "item"); advance(state, 1); } }] : []),
   ];
+}
+
+function sawGlass(s) {
+  const lines = ["玻璃上映著馬路、黃線和你。倒影的你站在黃線內側。你沒有。"];
+  if (s.piecedTimetable) lines.push("你口袋裡的班表碎紙透出一點白。玻璃裡的你正把筆交給某個看不見的人。");
+  if (s.countedRiders) lines.push("你想起那十六個低著頭的人。玻璃裡多了一個，第十七個站在你背後。你沒有回頭。");
+  return lines.join("");
 }
 
 const ENDINGS = [
-  { id: "route-zero", label: "0 號車", when: (s) => s.boarded && (s.satWindow || s.gaveAddress || s.pulledBell), text: "車停了。車門外是中央車站，月台空得很完整。司機終於回頭，看著你說：『到站了。你上次也是在這裡下車。』你想問上次是什麼時候，卻發現手上拿著一張已經刷過的票。日期是明天。" },
-  { id: "walk-loop", label: "沒有離開的路", when: (s) => s.left, text: "你沿著路燈走，走過便利商店、診所、那面塗了白漆的牆。第四盞路燈底下，你又看見候車亭。站牌上的公告被撕掉一半，只留下終點站三個字：中央車站。你決定再等一班。" },
-  { id: "real-last-bus", label: "末班車", when: (s) => s.firstBus === "refused" && s.time >= 1485, text: "一台普通的末班車靠站。車頭號碼你認得，司機也只是司機。他問你去哪裡，你看著公告，說出終點站的名字。車開走時，候車亭的玻璃反射出一個還在等車的人影——它沒有上來。" },
+  { id: "on-the-list", label: "第十七位乘客", when: (s) => effectiveTime(s) >= END && s.boarded, at: END,
+    text: "車開得很穩。你坐在第十七張座位，身旁的人終於抬起頭。每一張臉都認得你，只是年紀不一樣。司機報站：『下一站，候車亭。』你看向窗外，自己還站在黃線後，等最後一班車。" },
+  { id: "missed", label: "錯過末班", when: (s) => effectiveTime(s) >= END && (s.askedDriver || s.piecedTimetable || s.leftStop), at: END,
+    text: "00:48。路上恢復安靜。你以為自己錯過末班車，直到候車亭玻璃亮起一行新的班表：下一班 00:17，請提前十分鐘候車。日期是明天。你不知道明天是不是已經開始了。" },
+  { id: "walked-home", label: "走回去", when: (s) => effectiveTime(s) >= END, at: END,
+    text: "00:48。你離開候車亭，沿著還有路燈的方向走。走出兩個街口後，你回頭看了一眼：站牌還在，玻璃還亮著，黃線後站著一個人。那個人沒有抬頭。你繼續走，沒有數自己走了幾步。" },
 ];
-
-function derive(state) {
-  if (state.ended || state.firstBus) return;
-  if (state.time >= 1465) {
-    state.firstBus = true;
-    narrate(state, "一台公車滑進站。它沒有煞車的聲音，車頭電子板也沒有立刻亮起。司機停得很準，剛好停在你面前。", "omen", 1465);
-  }
-}
 
 export const lastBus = {
   id: "last-bus",
   title: "末班公車",
-  blurb: "凌晨的站牌沒有班表，但每一班車都會停。",
+  blurb: "班表被撕掉了，但有人還在等那一班車。",
   theme: "bus",
   archive: { no: "RH-025", stamp: "夜間留置" },
-  // 敘事流已由 UI 自動標記目前時間；不要在本文再手寫一份時間。
   openingNarrative: "你站在一個不熟的公車站。候車亭玻璃上有幾行被指甲刮出來的字，班表被人整張撕掉。\n\n路的另一頭，一對車燈正往這裡來。",
-  initialTime: 1457, // 00:17
-  initialUnlockedRuleIds: ["r1", "r2", "r3", "r4", "r5", "r6"],
+  initialTime: START,
+  initialUnlockedRuleIds: ["b1", "b2", "b3", "b4"],
   rules: RULES,
   rulebooks: RULEBOOKS,
-  initialState: { firstBus: false, readSign: false, crossedLine: false, checkedNumber: false, boarded: false, wrongBus: false, satWindow: false, gaveAddress: false, pulledBell: false, left: false },
+  initialState: { activeEvent: null, activeUntil: null, doneEvents: [], foundNote: false, askedDriver: false, piecedTimetable: false, boarded: false, countedRiders: false, leftStop: false },
   derive,
-  actions: choices,
+  actions,
   endings: ENDINGS,
-  ui: { visitLabel: (n) => `第 ${n} 次候車`, restart: "重新候車" },
+  ui: { visitLabel: (n) => `第 ${n} 次候車`, restart: "回到候車亭" },
 };
 
 export default lastBus;

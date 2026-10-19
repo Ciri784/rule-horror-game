@@ -1,26 +1,40 @@
-import { describe, expect, it } from "vitest";
-import { applyAction, formatTime, freshState, narrate } from "../engine.js";
+import { describe, it, expect } from "vitest";
+import { freshState, applyAction, narrate, evaluateTriggers } from "../engine.js";
 import { lastBus } from "../scenes/last-bus.js";
 
-function boot() {
+function run() {
   const state = freshState(lastBus);
-  return { state, ctx: { scene: lastBus, narrate: (text, kind) => narrate(state, text, kind) } };
+  const ctx = { scene: lastBus, visitCount: 1, fresh: true, narrate: (t, k) => narrate(state, t, k) };
+  return { state, ctx };
 }
+const act = (s, ctx, id) => applyAction(lastBus, s, id, ctx);
 
 describe("末班公車", () => {
-  it("uses one clock: the UI timestamp is midnight and the prose does not duplicate it", () => {
-    const { state } = boot();
-    expect(formatTime(state.time)).toBe("00:17");
-    expect(lastBus.openingNarrative).not.toMatch(/\b\d{2}:\d{2}/);
+  it("從 23:37 開始，跨午夜後 00:17 才等到 17 號車", () => {
+    const { state } = run();
+    state.time = 17;
+    state.crossedMidnight = true;
+    state.doneEvents = ["bus-blank", "paper"];
+    evaluateTriggers(lastBus, state);
+    expect(state.activeEvent).toBe("bus-17");
   });
 
-  it("lets the player refuse 0 號車 and reach the genuine last bus", () => {
-    const { state, ctx } = boot();
-    applyAction(lastBus, state, "wait", ctx);
-    expect(state.firstBus).toBe(true);
-    applyAction(lastBus, state, "let-pass", ctx);
-    applyAction(lastBus, state, "wait-real", ctx);
-    applyAction(lastBus, state, "wait-real", ctx);
-    expect(state.ended).toBe("real-last-bus");
+  it("上 17 號車會在 00:48 成為第十七位乘客", () => {
+    const { state, ctx } = run();
+    state.time = 17;
+    state.crossedMidnight = true;
+    state.doneEvents = ["bus-blank", "paper"];
+    evaluateTriggers(lastBus, state);
+    act(state, ctx, "bus-17:board");
+    state.time = 48;
+    const end = act(state, ctx, "wait");
+    expect(end && end.id).toBe("on-the-list");
+  });
+
+  it("撿便條會解鎖第二份互相矛盾的規則", () => {
+    const { state, ctx } = run();
+    act(state, ctx, "note");
+    expect(state.foundNote).toBe(true);
+    expect(state.unlockedRuleIds).toEqual(expect.arrayContaining(["n1", "n2", "n3"]));
   });
 });
