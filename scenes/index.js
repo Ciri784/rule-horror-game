@@ -8,6 +8,7 @@ import { nightDesk } from "./night-desk.js";
 import { store } from "./store.js";
 import { lastBus } from "./last-bus.js";
 import { closedClinic } from "./closed-clinic.js";
+import { laundromat } from "./laundromat.js";
 
 export const scenes = [
   hotel,
@@ -15,4 +16,5 @@ export const scenes = [
   store,
   lastBus,
   closedClinic,
+  laundromat,
 ];
