@@ -262,7 +262,8 @@ export function renderScene(sceneId) {
   function rerender() {
     // 結案歸檔：結局達成時寫進檔案室記錄（_filed 保證一局只歸檔一次），
     // 首頁卷宗的調閱章與檔案室的異變程度都靠這份記錄。
-    if (state.ended && !state._filed) {
+    const continuing = state.ended && typeof scene.canContinue === "function" && scene.canContinue(state);
+    if (state.ended && !continuing && !state._filed) {
       fileEndingRecord(scene, state);
       state._filed = true;
       saveState(sceneId, state);
@@ -292,11 +293,25 @@ export function renderScene(sceneId) {
       label(scene, urgent ? "urgentTitle" : "actionsTitle")));
     const ending = state.ended ? scene.endings.find((e) => e.id === state.ended) : null;
     if (ending) {
+      const endChildren = [el("div", { class: "stamp" }, ending.label)];
+      if (continuing && typeof scene.advanceNight === "function") {
+        endChildren.push(el("p", { class: "scene-intro" }, "天亮了。交班簿留在抽屜裡，下一晚還會回來。"));
+        endChildren.push(el("button", {
+          class: "restart",
+          onclick: (ev) => {
+            ev.preventDefault();
+            scene.advanceNight(state);
+            saveState(sceneId, state);
+            rerender();
+          },
+        }, "開始第二晚"));
+      } else {
+        endChildren.push(receiptEl(scene, state, ending));
+        endChildren.push(el("a", { href: "#", onclick: (ev) => { ev.preventDefault(); restart(); } },
+          el("button", { class: "restart" }, label(scene, "restart"))));
+      }
       actCol.appendChild(el("div", { class: "scene-end" }, [
-        el("div", { class: "stamp" }, ending.label),
-        receiptEl(scene, state, ending),
-        el("a", { href: "#", onclick: (ev) => { ev.preventDefault(); restart(); } },
-          el("button", { class: "restart" }, label(scene, "restart"))),
+        ...endChildren,
       ]));
     } else {
       const actions = scene.actions(state, ctx);

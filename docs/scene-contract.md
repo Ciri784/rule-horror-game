@@ -53,6 +53,7 @@
 |------|------|------|
 | `initialState` | object | spread 進 freshState 的**場景私有欄位**(門牌、計數、旗標…)。引擎不碰,只有你的 `derive`/`actions` 讀寫。 |
 | `derive(state)` | fn | 每步(action 後)呼叫一次,重算衍生狀態(例:偏移到門檻就翻門牌)。 |
+| `canContinue(state)` / `advanceNight(state)` | fn | 選用的多段場景介面。結局後若 `canContinue` 為真，畫面顯示續段按鈕；`advanceNight` 必須清掉 `ended`、重設該段時鐘與事件狀態。只在同一個故事真的有連續段落時使用。 |
 
 ### 初始通用狀態(選用,有預設)
 

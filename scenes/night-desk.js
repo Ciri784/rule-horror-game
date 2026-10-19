@@ -51,7 +51,7 @@ const RULEBOOKS = {
 // ── 事件池 ──
 // 每個事件有時間窗 [start， end]（分鐘）。進窗就強制找上玩家；
 // 超過時限沒處理，timeout 也是一種處置。
-const EVENTS = [
+const NIGHT_ONE_EVENTS = [
   {
     id: "ev-drunk",
     window: [1400, 1435], // 23:20–23:55
@@ -191,8 +191,65 @@ const FOLLOWUPS = {
   },
 };
 
-function findEventDef(id) {
-  return EVENTS.find((e) => e.id === id) || FOLLOWUPS[id] || null;
+// 第二晚不只是把第一晚事件換皮：昨天的選擇會被寫成今天的文件。玩家
+// 不是重玩同一班，而是讀到世界怎麼把自己歸檔。
+const NIGHT_TWO_EVENTS = [
+  {
+    id: "n2-guestbook",
+    window: [1450, 1485], // 00:10–00:45
+    prompt: "交班簿攤在櫃台上，昨晚那頁被撕掉一半。留下的半行寫著：『如果 704 的客人來問名字，不要念。』玻璃門隨即開了。一個人站在門外，沒有進來，問你：『登記簿上，我叫什麼？』",
+    choices: [
+      { id: "deny", label: "「我不能提供住客資料」",
+        resolve: (s, c) => { c.narrate("你照正常流程回答。那人點頭，像終於確認了什麼，走進夜裡。登記簿自己翻到 704：名字那格仍然空著。"); } },
+      { id: "read", label: "念出登記簿上的名字",
+        resolve: (s, c) => { s.readGuestName = true; c.narrate("你低頭念了。那格明明是空的，你卻念出自己的名字。門外的人笑了一下，說：『原來你記得。』他沒有進來。你的名牌忽然變得很重。"); } },
+    ],
+    timeout: (s) => narrate(s, "你沒有回答。那人等到大廳的鐘跳了一格，才說：『沒關係，明晚再問。』他走後，玻璃門上留著一個從裡面按出的手印。"),
+  },
+  {
+    id: "n2-revised-rule",
+    window: [1570, 1605], // 02:10–02:45
+    prompt: "印好的守則少了一頁。抽屜最底下有張新紙，編號直接從第七條跳到第九條：『若您昨夜曾讓任何人進門，請勿閱讀本條。』你已經看完了。",
+    choices: [
+      { id: "file", label: "把新頁夾回守則裡",
+        resolve: (s, c) => { s.filedRevision = true; c.narrate("你把那張紙夾回去。紙背透出一行字，是你自己的筆跡：『已閱。』墨很新。你把守則闔上，假裝那行字沒有跟著闔起來。"); } },
+      { id: "discard", label: "把新頁撕掉",
+        resolve: (s, c) => { s.toreRevision = true; c.narrate("紙很薄，卻撕不乾淨。你撕成兩半，兩半都印著完整的第九條。你把它們塞進垃圾桶，回頭時抽屜裡又有一張新的，連摺痕都一樣。"); } },
+    ],
+    timeout: (s) => narrate(s, "你把抽屜推回去，假裝沒看見。十分鐘後它自己滑開一條縫，剛好夠露出『請勿閱讀』四個字。"),
+  },
+  {
+    id: "n2-name",
+    window: [1695, 1735], // 04:15–04:55
+    prompt: "電梯響了一聲，沒開門。登記簿卻自己翻到最後一頁：704 那格寫著你的名字，入住日期是明天。交班簿上前任留了一句：『別改。改了就不知道是誰住。』",
+    choices: [
+      { id: "leave", label: "不改那個名字",
+        resolve: (s, c) => { c.narrate("你把筆放下。墨跡慢慢乾了。你盯著日期看了很久，最後決定不要算明天是從哪一刻開始。電梯又響了一聲，仍然沒開門。"); } },
+      { id: "erase", label: "把名字擦掉",
+        resolve: (s, c) => { s.erasedOwnName = true; c.narrate("橡皮擦過紙面，名字淡了一點。你再擦，它變成另一個名字。再擦，變成前任的名字。你停下來時，704 那格留下的是一小塊發白的紙，像有人從裡面擦過。"); } },
+    ],
+    timeout: (s) => narrate(s, "你一直沒有碰那一頁。它在你眼前慢慢翻回去，翻到空白頁。只有最下面一格沾著剛寫過字的墨味。"),
+  },
+  {
+    id: "n2-handover",
+    window: [1760, 1795], // 05:20–05:55
+    prompt: "快六點時，有人從員工通道走出來。是你。至少制服、名牌和走路的姿勢都一樣。對方停在櫃台外，沒有伸手拿鑰匙，只說：『我來看你有沒有把名字留在簿上。』",
+    choices: [
+      { id: "answer", label: "把登記簿推給他",
+        resolve: (s, c) => { s.showedRegister = true; c.narrate("你把簿子推過去。對方沒有翻，只看著封面，然後點頭：『那就輪到下一個。』他轉身走回員工通道。那裡本來沒有門。你沒有追過去。"); } },
+      { id: "lock", label: "把登記簿鎖回抽屜",
+        resolve: (s, c) => { s.lockedRegister = true; c.narrate("你把簿子鎖進抽屜。對方看了你一會，笑得很疲倦：『你上次也是這樣。』他走進大門外的霧裡，玻璃門沒有開。抽屜裡傳來很輕的翻頁聲。"); } },
+    ],
+    timeout: (s) => narrate(s, "你沒有回話。對方也沒有催。06:00 前一分鐘，他說：『那我明晚再來。』然後像從來沒站過那裡一樣不見了。"),
+  },
+];
+
+function eventsFor(state) {
+  return state.night === 2 ? NIGHT_TWO_EVENTS : NIGHT_ONE_EVENTS;
+}
+
+function findEventDef(id, state) {
+  return eventsFor(state).find((e) => e.id === id) || FOLLOWUPS[id] || null;
 }
 
 // ── 衍生狀態：事件排程 ──
@@ -242,7 +299,7 @@ function derive(state) {
       }
       return;
     }
-    const ev = EVENTS.find((e) => !state.doneEvents.includes(e.id) && state.time >= e.window[0]);
+    const ev = eventsFor(state).find((e) => !state.doneEvents.includes(e.id) && state.time >= e.window[0]);
     if (ev) {
       if (state.time >= ev.window[1]) {
         // 整個窗口被跳過：不等玩家，直接以超時收場
@@ -259,7 +316,7 @@ function derive(state) {
 
   // 事件進行中：逾時強制收場
   if (state.time >= state.activeUntil) {
-    const def = findEventDef(state.activeEvent);
+    const def = findEventDef(state.activeEvent, state);
     state.doneEvents.push(state.activeEvent);
     state.activeEvent = null;
     state.activeUntil = null;
@@ -274,7 +331,7 @@ function actions(state, ctx) {
   if (state.ended) return [];
 
   if (state.activeEvent) {
-    const def = findEventDef(state.activeEvent);
+    const def = findEventDef(state.activeEvent, state);
     if (!def) return [];
     const list = typeof def.choices === "function" ? def.choices(state) : def.choices;
     return list.map((choice) => ({
@@ -321,12 +378,50 @@ const ENDINGS = [
   { id: "shift-end-dark", label: "交班（有什麼跟著你）",
     when: (s) => s.time >= SHIFT_END && (s.openedDoor || s.watchedTooLong || s.phoneMarked || s.drunkAdmitted),
     at: SHIFT_END,
-    text: "06:00。天亮了，但大廳好像比昨天暗了一點。你把鑰匙放進抽屜，發現抽屜裡已經有一串鑰匙。交班簿翻開著，最新一行字跡是你的：「他今晚還會來。」你不記得你寫過。第一晚，算是交班了。" },
+    text: "06:00。天亮了，但大廳好像比昨天暗了一點。你把鑰匙放進抽屜，發現抽屜裡已經有一串鑰匙。交班簿翻開著，最新一行字跡是你的：「他今晚還會來。」你不記得你寫過。這一晚，算是交班了。" },
   { id: "shift-end", label: "交班",
     when: (s) => s.time >= SHIFT_END,
     at: SHIFT_END,
-    text: "06:00。大門外的天是灰的，是早上那種灰。真正的早班推門進來，打哈欠，打卡。你把鑰匙放進抽屜，交班簿翻到今天那頁。你提筆，想寫點什麼給下一個夜班——最後只寫了：「守則在抽屜裡。你自己判斷。」第一晚，交班。" },
+    text: "06:00。大門外的天是灰的，是早上那種灰。真正的早班推門進來，打哈欠，打卡。你把鑰匙放進抽屜，交班簿翻到今天那頁。你提筆，想寫點什麼給下一個夜班——最後只寫了：「守則在抽屜裡。你自己判斷。」這一晚，交班。" },
 ];
+
+// 正常交班不是整個故事的結案。核心畫面會在這兩種結局後提供「下一晚」；
+// 走廊／提早交班則是不可逆的單晚結局，照舊直接歸檔。
+function canContinue(state) {
+  return state.night === 1 && (state.ended === "shift-end" || state.ended === "shift-end-dark");
+}
+
+function advanceNight(state) {
+  const dark = !!(state.openedDoor || state.watchedTooLong || state.phoneMarked || state.drunkAdmitted);
+  state.night += 1;
+  state.previousNightDark = state.previousNightDark || dark;
+  state.ended = null;
+  delete state._filed;
+  state.time = SHIFT_START;
+  state._lastTime = SHIFT_START;
+  state.startedAt = Date.now();
+  state._lastTickAt = state.startedAt;
+  state.crossedMidnight = false;
+  state.activeEvent = null;
+  state.activeUntil = null;
+  state.doneEvents = [];
+  state.pendingEvent = null;
+  state.monitorSeconds = 0;
+  state.drunkAdmitted = false;
+  state.explained4F = false;
+  state.openedDoor = false;
+  state.phoneMarked = false;
+  state.watchedTooLong = false;
+  state.wentUpstairs = false;
+  state.gaveKeysEarly = false;
+  state.readGuestName = false;
+  state.filedRevision = false;
+  state.toreRevision = false;
+  state.erasedOwnName = false;
+  state.showedRegister = false;
+  state.lockedRegister = false;
+  narrate(state, "第二晚，23:00。你又坐回同一張椅子。抽屜裡的守則重新印過，紙還是溫的。交班簿翻在昨天那頁——你不記得你寫過的字，已經替你寫好了。\n\n今晚的第九條沒有編號。", "narration");
+}
 
 export const nightDesk = {
   id: "night-desk",
@@ -348,6 +443,8 @@ export const nightDesk = {
   rules: RULES,
   rulebooks: RULEBOOKS,
   initialState: {
+    night: 1,
+    previousNightDark: false,
     activeEvent: null,
     activeUntil: null,
     doneEvents: [],
@@ -360,11 +457,19 @@ export const nightDesk = {
     watchedTooLong: false,
     wentUpstairs: false,
     gaveKeysEarly: false,
+    readGuestName: false,
+    filedRevision: false,
+    toreRevision: false,
+    erasedOwnName: false,
+    showedRegister: false,
+    lockedRegister: false,
   },
   derive,
   actions,
   timeModel: "shift",
   isUrgent: (s) => !!s.activeEvent,
+  canContinue,
+  advanceNight,
   endings: ENDINGS,
   ui: {
     visitLabel: (n) => `第 ${n} 次值班`,

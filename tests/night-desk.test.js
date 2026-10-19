@@ -145,4 +145,31 @@ describe("夜班櫃台 night-desk", () => {
     expect(state.ended).toBe("shift-end-dark");
     expect(end && end.id).toBe("shift-end-dark");
   });
+
+  it("正常交班後能進第二晚，第一晚的陰影會被保留", () => {
+    const { state, ctx } = newRun();
+    state.openedDoor = true;
+    state.ended = "shift-end-dark";
+    expect(nightDesk.canContinue(state)).toBe(true);
+    nightDesk.advanceNight(state);
+    expect(state.night).toBe(2);
+    expect(state.previousNightDark).toBe(true);
+    expect(state.ended).toBe(null);
+    expect(state.time).toBe(23 * 60);
+    expect(lastText(state)).toContain("第二晚");
+    expect(ids(state, ctx)).toEqual(["idle", "read-book"]);
+  });
+
+  it("第二晚的 704 問名事件不會誤跑第一晚事件池", () => {
+    const { state, ctx } = newRun();
+    state.ended = "shift-end";
+    nightDesk.advanceNight(state);
+    state.time = 1450;
+    tick(state);
+    expect(state.activeEvent).toBe("n2-guestbook");
+    expect(ids(state, ctx)).toContain("n2-guestbook:deny");
+    act(state, ctx, "n2-guestbook:read");
+    expect(state.readGuestName).toBe(true);
+    expect(state.narrative.some((n) => n.text.includes("自己的名字"))).toBe(true);
+  });
 });
