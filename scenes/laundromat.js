@@ -58,7 +58,7 @@ const ENDINGS = [
 ];
 export const laundromat = {
   id: "laundromat", title: "地下洗衣店", blurb: "第七台顯示剩三分鐘時，才是真的開始洗。",
-  archive: { no: "RH-017", stamp: "分類中" },
+  theme: "laundromat", archive: { no: "RH-017", stamp: "分類中" },
   openingNarrative: "地下洗衣店只開了一半的燈。你把衣服放進第七台，投了硬幣。\n\n機器開始轉之前，面板先顯示：03:00。你記得這台洗衣機沒有三分鐘的行程。",
   initialTime: START, initialUnlockedRuleIds: ["l1", "l2", "l3", "l4"], rules: RULES, rulebooks: RULEBOOKS,
   initialState: { activeEvent: null, activeUntil: null, doneEvents: [], foundNote: false, seenMachine: false, openedEarly: false, touchedCoat: false, leftShirt: false, tookShirt: false },

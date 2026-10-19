@@ -72,7 +72,7 @@ const ENDINGS = [
 
 export const closedClinic = {
   id: "closed-clinic", title: "停業診所", blurb: "22:00 停止掛號。最後一號還在等被叫到。",
-  archive: { no: "RH-044", stamp: "候診中" },
+  theme: "clinic", archive: { no: "RH-044", stamp: "候診中" },
   openingNarrative: "診所外的鐵門拉了一半，候診室卻還亮著。你推門進去，抽取機吐出一張號碼牌，沒有人按它。\n\n螢幕顯示：031。椅子上只有你和一個低著頭的老人。",
   initialTime: START, initialUnlockedRuleIds: ["c1", "c2", "c3", "c4"], rules: RULES, rulebooks: RULEBOOKS,
   initialState: { activeEvent: null, activeUntil: null, doneEvents: [], foundBag: false, seenScreen: false, correctedScreen: false, followedDoctor: false, returnedTicket: false, enteredClinic: false },

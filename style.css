@@ -1001,6 +1001,75 @@ pre {
 .theme-store .home-btn:hover { background: var(--ink-dim); color: var(--bg-2); }
 .theme-store .reset-btn:hover { background: var(--accent); color: var(--bg-2); }
 
+/* ============== 場景主題：末班公車 ==============
+   濕掉的柏油與候車亭玻璃；黃線是唯一還像規則的東西。 */
+.monitor.theme-bus {
+  --bg: #101419;
+  --bg-2: #171c22;
+  --bg-3: #20262d;
+  --ink: #d7d9cf;
+  --ink-dim: #9aa0a0;
+  --ink-faint: #58616a;
+  --accent: #d0a33a;
+  --accent-soft: #806724;
+  --amber: #e0b64b;
+  --border: rgba(190, 200, 205, 0.19);
+  --border-soft: rgba(190, 200, 205, 0.08);
+  background:
+    linear-gradient(rgba(10,13,16,.78), rgba(10,13,16,.78)),
+    repeating-linear-gradient(130deg, transparent 0 34px, rgba(208,163,58,.025) 35px 36px),
+    var(--bg);
+}
+.theme-bus .scene-head { border-bottom-color: var(--accent-soft); }
+.theme-bus .live-clock { color: var(--accent); }
+.theme-bus .col-narrative { background: linear-gradient(180deg, rgba(208,163,58,.035), transparent 34%), var(--bg-2); }
+.theme-bus .rulebook[data-book="座椅下的便條"] { transform: rotate(-.25deg); border-style: dashed; }
+.theme-bus .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ============== 場景主題：停業診所 ==============
+   過亮的候診室，冷白燈下連陰影都像病歷上的欄位。 */
+.monitor.theme-clinic {
+  --bg: #d9dfdc;
+  --bg-2: #edf0ea;
+  --bg-3: #cbd3d0;
+  --ink: #293434;
+  --ink-dim: #526463;
+  --ink-faint: #93a09d;
+  --accent: #9b332c;
+  --accent-soft: #b76d61;
+  --amber: #486f70;
+  --border: rgba(41,52,52,.22);
+  --border-soft: rgba(41,52,52,.1);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.55), 0 16px 42px rgba(0,0,0,.48), inset 0 0 46px rgba(74,124,120,.08);
+}
+.theme-clinic .scene-head { background: #c3ceca; border-bottom: 3px double rgba(41,52,52,.32); }
+.theme-clinic .col-narrative { background: repeating-linear-gradient(to bottom, transparent 0 27px, rgba(41,52,52,.055) 27px 28px), var(--bg-2); }
+.theme-clinic .rulebook[data-book="藥袋背面"] { background: #ebe6d3; border-style: dashed; }
+.theme-clinic .rulebook[data-book="藥袋背面"] .rulebook-summary { color: var(--accent); }
+.theme-clinic .action-btn:hover { background: #d4e0dc; border-color: var(--amber); color: var(--ink); }
+
+/* ============== 場景主題：地下洗衣店 ==============
+   藍白日光燈、濕衣物與不會停的轉筒。 */
+.monitor.theme-laundromat {
+  --bg: #0b1621;
+  --bg-2: #102334;
+  --bg-3: #183247;
+  --ink: #d3e5e5;
+  --ink-dim: #8db2bd;
+  --ink-faint: #456b7a;
+  --accent: #78d5d5;
+  --accent-soft: #3e969b;
+  --amber: #c1e06d;
+  --border: rgba(153,218,223,.2);
+  --border-soft: rgba(153,218,223,.08);
+  background: radial-gradient(ellipse at 50% -15%, rgba(77,177,198,.16), transparent 55%), var(--bg);
+}
+.theme-laundromat .scene-head { background: linear-gradient(90deg, #123049, #183a52, #123049); }
+.theme-laundromat .live-clock { color: var(--amber); }
+.theme-laundromat .col-narrative { background: repeating-linear-gradient(135deg, transparent 0 20px, rgba(117,213,213,.025) 21px 22px), var(--bg-2); }
+.theme-laundromat .rulebook[data-book="烘衣機上的便利貼"] { background: #183a4b; border-color: var(--accent-soft); }
+.theme-laundromat .action-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 18px rgba(120,213,213,.08); }
+
 /* ============== 預言、結案單、檔案室異變 ============== */
 /* 預言敘事：時間戳是未來的那一行。引擎不提示，只有顏色微微不對。 */
 .narr-row.kind-omen .narr-time { color: var(--accent); }
