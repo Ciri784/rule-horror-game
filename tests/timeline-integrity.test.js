@@ -26,11 +26,14 @@ describe("timeline integrity", () => {
     expect(anomaly?.time).toBe(1620);
   });
 
-  it("keeps the bus arrival on 00:25 even when waiting jumps across it", () => {
+  it("keeps the bus arrival on 00:17 even when waiting jumps across it", () => {
     const state = freshState(lastBus);
+    state.time = 15;
+    state.crossedMidnight = true;
+    state.doneEvents = ["bus-blank", "paper"];
     applyAction(lastBus, state, "wait", ctxFor(lastBus, state));
-    const arrival = state.narrative.find((entry) => entry.text.startsWith("一台公車滑進站"));
-    expect(arrival?.time).toBe(1465);
+    const arrival = state.narrative.find((entry) => entry.text.includes("真正有聲音的公車"));
+    expect(arrival?.time).toBe(1457);
   });
 
   it("keeps an omen consequence on its foretold minute after a long action", () => {

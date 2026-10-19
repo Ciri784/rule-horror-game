@@ -46,7 +46,7 @@ function derive(s) {
       const e = EVENTS.find((x) => !s.doneEvents.includes(x.id) && s.time >= x.at);
       if (!e) break;
       if (s.time >= e.at + 20) { s.doneEvents.push(e.id); e.timeout(s); }
-      else { s.activeEvent = e.id; s.activeUntil = e.at + 20; narrate(s, e.prompt); break; }
+      else { s.activeEvent = e.id; s.activeUntil = e.at + 20; narrate(s, e.prompt, "narration", e.at); break; }
     }
   } else if (s.time >= s.activeUntil) {
     const e = find(s.activeEvent); s.doneEvents.push(s.activeEvent); s.activeEvent = null; s.activeUntil = null; e?.timeout(s);
@@ -66,14 +66,14 @@ function actions(s) {
   return list;
 }
 const ENDINGS = [
-  { id: "admitted", label: "初診完成", when: (s) => s.time >= END && (s.enteredClinic || s.followedDoctor), text: "23:55。診所的鐵門落下。你坐在診間裡，病歷被放到面前，醫師簽名欄已經有字。門外的叫號螢幕亮起：044。你忽然知道，明天晚上還會有人坐在候診椅上，等這個號碼被跳過。" },
-  { id: "unregistered", label: "未掛號離開", when: (s) => s.time >= END, text: "23:55。鐵門還沒落下前，你走出去，把空白號碼牌留在抽取機旁。街上很冷。你回頭看了一眼，診所招牌已經暗了，只有叫號螢幕隔著玻璃亮著：下一位。你沒有加快腳步。" },
+  { id: "admitted", label: "初診完成", when: (s) => s.time >= END && (s.enteredClinic || s.followedDoctor), at: END, text: "診所的鐵門落下。你坐在診間裡，病歷被放到面前，醫師簽名欄已經有字。門外的叫號螢幕亮起：044。你忽然知道，明天晚上還會有人坐在候診椅上，等這個號碼被跳過。" },
+  { id: "unregistered", label: "未掛號離開", when: (s) => s.time >= END, at: END, text: "鐵門還沒落下前，你走出去，把空白號碼牌留在抽取機旁。街上很冷。你回頭看了一眼，診所招牌已經暗了，只有叫號螢幕隔著玻璃亮著：下一位。你沒有加快腳步。" },
 ];
 
 export const closedClinic = {
   id: "closed-clinic", title: "停業診所", blurb: "22:00 停止掛號。最後一號還在等被叫到。",
   archive: { no: "RH-044", stamp: "候診中" },
-  openingNarrative: "21:40。診所外的鐵門拉了一半，候診室卻還亮著。你推門進去，抽取機吐出一張號碼牌，沒有人按它。\n\n螢幕顯示：031。椅子上只有你和一個低著頭的老人。",
+  openingNarrative: "診所外的鐵門拉了一半，候診室卻還亮著。你推門進去，抽取機吐出一張號碼牌，沒有人按它。\n\n螢幕顯示：031。椅子上只有你和一個低著頭的老人。",
   initialTime: START, initialUnlockedRuleIds: ["c1", "c2", "c3", "c4"], rules: RULES, rulebooks: RULEBOOKS,
   initialState: { activeEvent: null, activeUntil: null, doneEvents: [], foundBag: false, seenScreen: false, correctedScreen: false, followedDoctor: false, returnedTicket: false, enteredClinic: false },
   derive, actions, timeModel: "shift", endings: ENDINGS, ui: { visitLabel: (n) => `第 ${n} 次候診`, restart: "重新候診" },

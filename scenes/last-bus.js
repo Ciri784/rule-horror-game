@@ -77,7 +77,7 @@ function derive(s) {
       } else {
         s.activeEvent = event.id;
         s.activeUntil = event.at + 24;
-        narrate(s, event.prompt);
+        narrate(s, event.prompt, "narration", event.at);
         break;
       }
     }

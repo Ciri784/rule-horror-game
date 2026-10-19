@@ -39,7 +39,7 @@ function derive(s) {
   if (s.ended) return;
   if (!s.activeEvent) {
     while (true) { const e = EVENTS.find((x) => !s.doneEvents.includes(x.id) && s.time >= x.at); if (!e) break;
-      if (s.time >= e.at + 18) { s.doneEvents.push(e.id); e.timeout(s); } else { s.activeEvent = e.id; s.activeUntil = e.at + 18; narrate(s, e.prompt); break; } }
+      if (s.time >= e.at + 18) { s.doneEvents.push(e.id); e.timeout(s); } else { s.activeEvent = e.id; s.activeUntil = e.at + 18; narrate(s, e.prompt, "narration", e.at); break; } }
   } else if (s.time >= s.activeUntil) { const e = find(s.activeEvent); s.doneEvents.push(s.activeEvent); s.activeEvent = null; s.activeUntil = null; e?.timeout(s); }
 }
 function actions(s) {
@@ -53,13 +53,13 @@ function actions(s) {
   return out;
 }
 const ENDINGS = [
-  { id: "sorted", label: "代為分類", when: (s) => s.time >= END && (s.openedEarly || s.touchedCoat || s.tookShirt), text: "01:50。店內廣播第一次響起：『逾時衣物，本店將代為分類。』你抱著衣服站在原地，才發現懷裡那疊裡有幾件不是你的。也有幾件，你已經想不起來原本是不是你的。第七台開始下一輪。" },
-  { id: "clean", label: "洗淨離開", when: (s) => s.time >= END, text: "01:50。你把衣服帶走，沒有回頭看失物籃。走上樓梯時，口袋裡多了一枚硬幣，冷得不自然。你沒有把它丟掉；你只是一路握著，直到回到有門鎖聲的地方。" },
+  { id: "sorted", label: "代為分類", when: (s) => s.time >= END && (s.openedEarly || s.touchedCoat || s.tookShirt), at: END, text: "店內廣播第一次響起：『逾時衣物，本店將代為分類。』你抱著衣服站在原地，才發現懷裡那疊裡有幾件不是你的。也有幾件，你已經想不起來原本是不是你的。第七台開始下一輪。" },
+  { id: "clean", label: "洗淨離開", when: (s) => s.time >= END, at: END, text: "你把衣服帶走，沒有回頭看失物籃。走上樓梯時，口袋裡多了一枚硬幣，冷得不自然。你沒有把它丟掉；你只是一路握著，直到回到有門鎖聲的地方。" },
 ];
 export const laundromat = {
   id: "laundromat", title: "地下洗衣店", blurb: "第七台顯示剩三分鐘時，才是真的開始洗。",
   archive: { no: "RH-017", stamp: "分類中" },
-  openingNarrative: "00:10。地下洗衣店只開了一半的燈。你把衣服放進第七台，投了硬幣。\n\n機器開始轉之前，面板先顯示：03:00。你記得這台洗衣機沒有三分鐘的行程。",
+  openingNarrative: "地下洗衣店只開了一半的燈。你把衣服放進第七台，投了硬幣。\n\n機器開始轉之前，面板先顯示：03:00。你記得這台洗衣機沒有三分鐘的行程。",
   initialTime: START, initialUnlockedRuleIds: ["l1", "l2", "l3", "l4"], rules: RULES, rulebooks: RULEBOOKS,
   initialState: { activeEvent: null, activeUntil: null, doneEvents: [], foundNote: false, seenMachine: false, openedEarly: false, touchedCoat: false, leftShirt: false, tookShirt: false },
   derive, actions, endings: ENDINGS, ui: { visitLabel: (n) => `第 ${n} 次洗衣`, restart: "重新洗衣" },
