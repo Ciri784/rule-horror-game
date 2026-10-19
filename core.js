@@ -560,6 +560,7 @@ export function renderIndex() {
   const recs = archiveRecords();
   const totalFiled = Object.values(recs).reduce((n, r) => n + (r.filedCount || 0), 0);
   const strange = totalFiled >= 3 ? 3 : totalFiled >= 2 ? 2 : totalFiled >= 1 ? 1 : 0;
+  const allFiled = listScenes().length > 0 && listScenes().every((s) => recs[s.id] && recs[s.id].filedCount);
 
   const head = [
     el("div", { class: "archive-plate" }, "第四十四號檔案室"),
@@ -574,6 +575,9 @@ export function renderIndex() {
   }
   if (strange >= 3) {
     head.push(el("div", { class: "archive-whisper" }, "（牆上昨天還沒有那份守則。）"));
+  }
+  if (allFiled) {
+    head.push(el("div", { class: "archive-whisper archive-final-whisper" }, "（所有卷宗都已歸檔。架上卻留著一個空位。）"));
   }
   const room = el("div", { class: "archive-room" + (strange ? ` strange-${strange}` : "") },
     [el("header", { class: "archive-head" }, head)]);
@@ -679,6 +683,15 @@ export function renderIndex() {
   }
   room.appendChild(shelf);
   if (keeperRules) room.appendChild(keeperRules);
+  if (allFiled) {
+    const lastLabels = listScenes().map((s) => recs[s.id].last && recs[s.id].last.label).filter(Boolean);
+    room.appendChild(el("div", { class: "archive-final" }, [
+      el("div", { class: "original-head" }, "管理員補件 · 無編號"),
+      el("p", {}, "本室已收齊六份結案記錄。請確認：您是否仍記得自己從哪一份卷宗走進來？"),
+      el("p", { class: "archive-final-red" }, "若記得，請勿填寫。若不記得，空位會替您保留。"),
+      el("p", { class: "archive-final-meta" }, `最近歸檔：${lastLabels.join(" · ")}`),
+    ]));
+  }
   room.appendChild(el("div", { class: "meta" }, "Rule Horror · Ciri784"));
   appRoot().appendChild(room);
 }

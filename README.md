@@ -25,6 +25,10 @@ it usually rewrites the rulebook — including rewriting itself.
   says morning — not when the windows start to brighten.
 - **末班公車** — A bus stop with no timetable. Every bus stops, but only one
   is yours; learn what the temporary notice means before you get on.
+- **停業診所** — The clinic stopped taking registrations at ten. The final
+  number is still on the screen, and it has your name on the back.
+- **地下洗衣店** — Machine seven begins its cycle when it says three minutes
+  remain. Take only your own clothes home.
 
 ## Run locally
 

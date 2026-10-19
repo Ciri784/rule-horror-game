@@ -1110,6 +1110,22 @@ pre {
 /* 管理員守則:貼在卷宗後方牆上,上緣被卷宗遮住,要往下捲才看到。
    比卷宗更白更正式,膠帶固定。層疊:卷宗在上(shelf 較高 z-index)。 */
 .archive-shelf { position: relative; z-index: 2; }
+.archive-final {
+  max-width: 620px;
+  margin: 52px auto 14px;
+  padding: 22px 26px;
+  color: var(--ink);
+  border: 1px solid var(--ink-faint);
+  background: rgba(20, 17, 13, 0.64);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35), inset 0 0 34px rgba(212,160,74,0.05);
+  font-size: 13px;
+  line-height: 1.85;
+  letter-spacing: 0.08em;
+}
+.archive-final p { margin: 12px 0 0; }
+.archive-final-red { color: var(--accent); }
+.archive-final-meta { color: var(--ink-dim); font-size: 11px; }
+.archive-final-whisper { color: var(--amber); }
 .keeper-rules {
   position: relative;
   z-index: 1;
