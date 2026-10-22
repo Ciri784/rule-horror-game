@@ -76,6 +76,17 @@ describe("深夜飯店 playthrough", () => {
     expect(state.ended).toBeFalsy();
   });
 
+  it("第二聲鈴後被帶到大廳的守規則房客有明確離開出口", () => {
+    const { state, ctx } = newRun();
+    state.crossedMidnight = true;
+    state.time = 6 * 60 + 10;
+    state.location = "lobby";
+
+    expect(can(state, ctx, "leave-at-dawn")).toBe(true);
+    act(state, ctx, "leave-at-dawn");
+    expect(state.ended).toBe("left-at-dawn");
+  });
+
   it("BAD ending (resident): in-room drift turns the door to 704 and the room takes you", () => {
     const { state, ctx } = newRun();
     state.crossedMidnight = true;

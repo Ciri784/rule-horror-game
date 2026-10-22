@@ -645,6 +645,16 @@ function actions(state, ctx) {
           s.time += 2;
         } });
     }
+    // 第三次睡眠會把守規則的房客帶到大廳；若已錯過第二聲鈴，
+    // 給他一個明確的收束出口，而不是讓大廳的觀察選項無限延長。
+    if (state.crossedMidnight && state.time >= 6 * 60 + 10
+      && has(state, "guest-card") && state.doorNumber === CARD_NUMBER) {
+      out.push({ id: "leave-at-dawn", label: "離開飯店",
+        onChoose: (s, c) => {
+          s._leftAtDawn = true;
+          c.narrate("你沒有再看櫃台。旋轉門推開時，外面的光已經亮了。");
+        } });
+    }
   }
 
   else if (at("staff-corridor")) {
@@ -786,6 +796,12 @@ const ENDINGS = [
     text: "你把房卡交回櫃台。他翻了翻登記簿，找到你的名字，劃掉一行。\n他說：您是今晚第一個退房的。\n你走出旋轉門。陽光很亮，停車場空蕩蕩的。\n你回頭看了一眼。電梯面板上，有一層燈亮著。",
     when: (s) => s._checkedOutAtDesk === true },
 
+  // 被夢帶到大廳的房客錯過了第二聲鈴；只要房卡與門牌仍一致，
+  // 他仍有一條明確離開飯店的結束路徑。
+  { id: "left-at-dawn", label: "天亮離開",
+    text: "旋轉門在你身後慢慢停下。\n你摸到口袋裡的房卡，號碼還是 602。\n太陽照著停車場，亮得讓你一時看不清飯店的窗。\n你沒有回頭。",
+    when: (s) => s._leftAtDawn === true },
+
   // 身份不是房客、撐過午夜。
   { id: "claimed-by-clerk", label: "被叫去開門",
     text: "走廊盡頭，夜班的櫃台人員已經站在那裡。\n他笑著跟你說：你的房間我們幫你換好了，請跟我來。\n你走進電梯，他沒按樓，門自己關上。\n你想起那本守則叫你出來巡邏。你還記得是哪一本，但已經想不起上面寫了什麼。",
@@ -812,7 +828,7 @@ export const hotel = {
   initialIdentity: "guest",
   initialLocation: "my-room",
   initialTime: 23 * 60,
-  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _tvSeen: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false, _roomChanged: false, _closedEyes: false, _cardOnPillow: false, _packed: false, _checkedOutAtDesk: false, _readLog: false },
+  initialState: { doorNumber: CARD_NUMBER, drift: 0, tvOn7: false, tvOff: false, _tvSeen: false, _blackout: false, sleptCount: 0, _keyUsedOnDoor: false, _usedKeyOnPanel: false, _brokeRg4: false, _entered704Floor: false, _askedKnocker: false, _roomChanged: false, _closedEyes: false, _cardOnPillow: false, _packed: false, _checkedOutAtDesk: false, _leftAtDawn: false, _readLog: false },
   // 預言：02:20 走廊的燈會暗一秒——01:35 起記錄裡先出現那條
   // 時間不對的記錄，時間到了它真的發生。（cycle 時鐘，訂在午夜後）
   omens: [
