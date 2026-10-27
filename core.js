@@ -271,7 +271,16 @@ export function renderScene(sceneId) {
     appRoot().innerHTML = "";
 
     // 規則欄 （left on desktop， top on mobile）
-    const rulesCol = el("aside", { class: "col col-rules" });
+    const rulesPanelId = `${sceneId}-rules-panel`;
+    const nowPanelId = `${sceneId}-now-panel`;
+    const nowTabId = `${sceneId}-tab-now`;
+    const rulesTabId = `${sceneId}-tab-rules`;
+    const rulesCol = el("aside", {
+      class: "col col-rules",
+      id: rulesPanelId,
+      role: "tabpanel",
+      "aria-labelledby": rulesTabId,
+    });
     rulesCol.appendChild(el("h2", { class: "col-title" }, label(scene, "rulesTitle")));
     if (state.visitCount > 1) {
       rulesCol.appendChild(el("p", { class: "col-sub" },
@@ -280,7 +289,12 @@ export function renderScene(sceneId) {
     rulesCol.appendChild(renderRules(scene, state, openBooks));
 
     // 敘事欄 （center）
-    const narrCol = el("section", { class: "col col-narrative" });
+    const narrCol = el("section", {
+      class: "col col-narrative",
+      id: nowPanelId,
+      role: "tabpanel",
+      "aria-labelledby": nowTabId,
+    });
     narrCol.appendChild(el("h2", { class: "col-title" }, label(scene, "nowTitle")));
     const streamEl = el("div", { class: "narrative-stream", id: "narrative-stream" });
     narrCol.appendChild(streamEl);
@@ -388,25 +402,51 @@ export function renderScene(sceneId) {
     const setTab = (id, btn) => {
       mobileTab = id;
       grid.dataset.mtab = id;
-      tabsEl.querySelectorAll(".mobile-tab").forEach((b) =>
-        b.classList.toggle("active", b === btn));
+      tabsEl.querySelectorAll(".mobile-tab").forEach((b) => {
+        const selected = b === btn;
+        b.classList.toggle("active", selected);
+        b.setAttribute("aria-selected", String(selected));
+        b.tabIndex = selected ? 0 : -1;
+      });
       if (id === "rules") {
         seenRuleCounts[sceneId] = ruleCount;
         const badge = tabsEl.querySelector(".tab-badge");
         if (badge) badge.remove();
       }
     };
+    const onTabKeydown = (ev) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(ev.key)) return;
+      ev.preventDefault();
+      const tabs = [...tabsEl.querySelectorAll(".mobile-tab")];
+      const current = tabs.indexOf(ev.currentTarget);
+      const next = ev.key === "Home" ? 0
+        : ev.key === "End" ? tabs.length - 1
+        : (current + (ev.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      const target = tabs[next];
+      target.focus();
+      setTab(target.dataset.mobileTab, target);
+    };
     const tabNow = el("button", {
-      type: "button", role: "tab",
+      type: "button", role: "tab", id: nowTabId,
+      "aria-controls": nowPanelId,
+      "aria-selected": String(mobileTab === "now"),
+      tabindex: mobileTab === "now" ? "0" : "-1",
+      "data-mobile-tab": "now",
       class: "mobile-tab" + (mobileTab === "now" ? " active" : ""),
       onclick: (ev) => { ev.preventDefault(); setTab("now", ev.currentTarget); },
+      onkeydown: onTabKeydown,
     }, label(scene, "nowTitle"));
     const tabRulesKids = [label(scene, "rulesTitle")];
     if (hasNewRules) tabRulesKids.push(el("span", { class: "tab-badge" }));
     const tabRules = el("button", {
-      type: "button", role: "tab",
+      type: "button", role: "tab", id: rulesTabId,
+      "aria-controls": rulesPanelId,
+      "aria-selected": String(mobileTab === "rules"),
+      tabindex: mobileTab === "rules" ? "0" : "-1",
+      "data-mobile-tab": "rules",
       class: "mobile-tab" + (mobileTab === "rules" ? " active" : ""),
       onclick: (ev) => { ev.preventDefault(); setTab("rules", ev.currentTarget); },
+      onkeydown: onTabKeydown,
     }, tabRulesKids);
     tabsEl = el("div", { class: "mobile-tabs", role: "tablist" }, [tabNow, tabRules]);
     // Chrome is deliberately minimal: the reader is *inside* the place, not

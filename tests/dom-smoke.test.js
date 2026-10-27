@@ -32,4 +32,20 @@ describe("DOM smoke: every scene renders", () => {
       expect(document.querySelectorAll(".action-btn").length).toBeGreaterThan(0);
     });
   }
+
+  it("mobile tabs identify their active panel for keyboard and screen-reader users", () => {
+    renderScene("hotel");
+    const tabs = [...document.querySelectorAll(".mobile-tab")];
+    expect(tabs).toHaveLength(2);
+    for (const tab of tabs) {
+      const panel = document.getElementById(tab.getAttribute("aria-controls"));
+      expect(panel).toBeTruthy();
+      expect(panel.getAttribute("role")).toBe("tabpanel");
+      expect(panel.getAttribute("aria-labelledby")).toBe(tab.id);
+    }
+    expect(tabs.filter((tab) => tab.getAttribute("aria-selected") === "true")).toHaveLength(1);
+    tabs[0].dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(tabs[1].getAttribute("aria-selected")).toBe("true");
+    expect(document.querySelector(".scene-grid").dataset.mtab).toBe("rules");
+  });
 });
