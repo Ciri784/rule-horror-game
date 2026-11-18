@@ -606,6 +606,8 @@ export function renderIndex() {
     el("div", { class: "archive-plate" }, "第四十四號檔案室"),
     el("p", { class: "archive-sub" },
       "這些是從不同場所流出的守則。每一份都自稱能保護您。多數是真的。"),
+    el("p", { class: "archive-sub" },
+      "先選一份卷宗。進去以後，不必急著選；把彼此矛盾的紙留著，通常比相信第一張更有用。"),
     el("div", { class: "archive-note" },
       strange >= 1 ? "本室文件限本人調閱 · 閱後請歸檔 · 請勿攜出"
                    : "本室文件限本人調閱 · 閱後請歸檔"),
