@@ -429,6 +429,15 @@ li.amended::after {
 /* 限時處置狀態：事件上門時行動欄整體轉紅。不用數字倒數——
    壓迫感交給顏色與脈動，精確秒數交給不安。 */
 .col-title.urgent { color: var(--accent); }
+.urgent-note {
+  margin: -2px 0 12px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--accent);
+  background: rgba(210,74,74,0.08);
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1.55;
+}
 .col-actions.urgent .action-btn {
   border-color: var(--accent);
   background: rgba(210,74,74,0.07);

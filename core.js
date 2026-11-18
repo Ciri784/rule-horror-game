@@ -134,7 +134,7 @@ function renderRules(scene, state, openBooks) {
     for (const [bookName, rules] of Object.entries(groups)) {
       if (!rules || rules.length === 0) continue;
       // 計算這份守則單有幾條條件還沒過的 （顯示為「待解鎖」）
-      const lockedHint = rules.length === 0 ? "" : `（${rules.length} 條）`;
+      const lockedHint = rules.length === 0 ? "" : `（已取得 ${rules.length} 條）`;
       const props = {
         class: "rulebook",
         // 暴露書名給主題 CSS：例如夜班的「交班簿」要換手寫體
@@ -305,6 +305,7 @@ export function renderScene(sceneId) {
     const actCol = el("aside", { class: "col col-actions" + (urgent ? " urgent" : "") });
     actCol.appendChild(el("h2", { class: "col-title" + (urgent ? " urgent" : "") },
       label(scene, urgent ? "urgentTitle" : "actionsTitle")));
+    if (urgent) actCol.appendChild(el("p", { class: "urgent-note" }, "這件事正在發生。選擇沉默，也會留下結果。"));
     const ending = state.ended ? scene.endings.find((e) => e.id === state.ended) : null;
     if (ending) {
       const endChildren = [el("div", { class: "stamp" }, ending.label)];
