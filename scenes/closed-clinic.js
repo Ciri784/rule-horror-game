@@ -66,8 +66,19 @@ function actions(s) {
   return list;
 }
 const ENDINGS = [
-  { id: "admitted", label: "初診完成", when: (s) => s.time >= END && (s.enteredClinic || s.followedDoctor), at: END, text: "診所的鐵門落下。你坐在診間裡，病歷被放到面前，醫師簽名欄已經有字。門外的叫號螢幕亮起：044。你忽然知道，明天晚上還會有人坐在候診椅上，等這個號碼被跳過。" },
-  { id: "unregistered", label: "未掛號離開", when: (s) => s.time >= END, at: END, text: "鐵門還沒落下前，你走出去，把空白號碼牌留在抽取機旁。街上很冷。你回頭看了一眼，診所招牌已經暗了，只有叫號螢幕隔著玻璃亮著：下一位。你沒有加快腳步。" },
+  { id: "admitted", label: "初診完成", when: (s) => s.time >= END && (s.enteredClinic || s.followedDoctor), at: END,
+    text: (s) => [
+      "診所的鐵門落下。你坐在診間裡，病歷被放到面前，醫師簽名欄已經有字。門外的叫號螢幕亮起：044。你忽然知道，明天晚上還會有人坐在候診椅上，等這個號碼被跳過。",
+      s.followedDoctor ? "你記得後門外那個和你一樣的人。他此刻大概還坐著，等你的號碼。" : "你自己拿著 044 走進來，現在才發現號碼牌背面沒有號碼，只有掛號日期：明天。",
+      s.foundBag ? "藥袋背面的第三句話沒有騙你；最後被叫到的人，從來不是最後一位。" : "",
+    ].filter(Boolean).join("\n\n") },
+  { id: "unregistered", label: "未掛號離開", when: (s) => s.time >= END, at: END,
+    text: (s) => [
+      "鐵門還沒落下前，你走出去，把空白號碼牌留在抽取機旁。街上很冷。你回頭看了一眼，診所招牌已經暗了，只有叫號螢幕隔著玻璃亮著：下一位。你沒有加快腳步。",
+      s.returnedTicket ? "抽取機沒有再吐牌。隔著玻璃，你看見 044 從螢幕上消失，像從未有人等過。" : "",
+      s.correctedScreen ? "那位老人沒有跟出來；但他翻過號碼牌時露出的名字，你一路都沒有忘記。" : "",
+      s.foundBag ? "藥袋還在你口袋裡。走到下一個路口時，背面的字已經全褪成『請耐心等候』。" : "",
+    ].filter(Boolean).join("\n\n") },
 ];
 
 export const closedClinic = {
