@@ -575,6 +575,7 @@ function receiptEl(scene, state, ending) {
     el("div", { class: "receipt-row" }, `結局：${ending.label}`),
     el("div", { class: "receipt-row" }, `時間：${formatTime(state.time)}`),
     el("div", { class: "receipt-row" }, `調閱：第 ${state.visitCount} 次`),
+    el("div", { class: "receipt-row" }, "備註：結案不代表理解；下次先留下互相矛盾的紙。"),
     el("div", { class: "receipt-bar" }),
     el("div", { class: "receipt-foot" }, "第四十四號檔案室 · 經辦"),
   ]);
