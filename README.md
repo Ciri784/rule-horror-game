@@ -1,4 +1,6 @@
-# Rule Horror Game
+# 四十四號檔案室 / Rule Horror Game
+
+直接遊玩：<https://ciri784.github.io/rule-horror-game/>
 
 A quiet collection of rule-horror interactive fiction.
 
@@ -30,6 +32,10 @@ it usually rewrites the rulebook — including rewriting itself.
 - **地下洗衣店** — Machine seven begins its cycle when it says three minutes
   remain. Take only your own clothes home.
 
+## 遊玩方式
+
+每個場景都不是考記憶力：規則會衝突、被改寫，甚至開始對玩家說謊。先讀環境，再決定信哪一張紙。
+
 ## Run locally
 
 Just open `index.html` in a browser. No build step, no server.
@@ -37,7 +43,7 @@ Just open `index.html` in a browser. No build step, no server.
 ## Deploy
 
 GitHub Pages is wired up via `.github/workflows/pages.yml`. Pushing to `main`
-will deploy the site root to `https://<owner>.github.io/rule-horror-game/`.
+will deploy the site root to <https://ciri784.github.io/rule-horror-game/>.
 
 ## Author
 
